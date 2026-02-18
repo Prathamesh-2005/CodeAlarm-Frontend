@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/nextleet/:match*",
+      "destination": "/api/nextleet"
+    },
+    {
       "source": "/((?!api).*)",
       "destination": "/index.html"
     }
