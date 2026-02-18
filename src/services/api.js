@@ -4,12 +4,12 @@ const API_BASE_URL = 'https://code-alarm-2.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 10000, 
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');

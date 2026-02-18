@@ -1,19 +1,15 @@
-// src/pages/Home.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import api from '../services/api';
-import { Trophy, Sparkles } from "lucide-react";
 import { 
   CalendarDaysIcon, 
   ClockIcon, 
-  TrophyIcon, 
   BellIcon,
   ArrowRightIcon,
-  FireIcon,
-  SparklesIcon,
-  HeartIcon
+  TrophyIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
 
 const Home = () => {
@@ -145,198 +141,188 @@ const Home = () => {
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-purple-500"></div>
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-200 border-t-gray-900 dark:border-gray-800 dark:border-t-gray-50"></div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen w-full ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
-      {/* Hero Section */}
-     <div className="w-full bg-gradient-to-br from-gray-800 via-gray-700 to-slate-800 px-6 py-12 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-10">
-        <div className="absolute top-10 left-10 w-20 h-20 bg-purple-400 rounded-full blur-xl"></div>
-        <div className="absolute top-32 right-20 w-16 h-16 bg-blue-400 rounded-full blur-lg"></div>
-        <div className="absolute bottom-20 left-1/3 w-24 h-24 bg-indigo-400 rounded-full blur-xl"></div>
-      </div>
-      
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 drop-shadow-sm animate-pulse">
-              Welcome back, {user?.firstName || user?.username}! 👋
-            </h1>
-            <p className="text-lg text-gray-200 max-w-2xl font-medium drop-shadow-sm">
-              Ready to tackle some coding challenges today? Let's make it amazing! ✨
-            </p>
-            <div className="mt-6 flex items-center space-x-4">
-              <div className="flex items-center space-x-2 bg-gray-700/60 backdrop-blur-sm rounded-full px-4 py-2 border border-gray-600/50">
-                <Sparkles className="h-5 w-5 text-purple-400" />
-                <span className="text-gray-200 font-medium">Keep coding!</span>
-              </div>
-            </div>
-          </div>
-          <div className="hidden lg:block">
-            <div className="w-32 h-32 bg-gradient-to-br from-gray-600/70 to-gray-700/40 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg border border-gray-500/60 animate-bounce">
-              <Trophy className="h-16 w-16 text-purple-400 drop-shadow-sm" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-      {/* Stats Section */}
-      <div className={`w-full px-6 py-12 ${isDark ? 'bg-gray-900' : 'bg-gradient-to-b from-slate-50 via-white to-slate-50'}`}>
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Link to="/upcoming" className="group">
-              <div className="text-center p-6 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-white/20 rounded-full mb-4">
-                  <CalendarDaysIcon className="h-6 w-6" />
-                </div>
-                <h3 className="text-3xl font-bold mb-2">{stats.upcoming}</h3>
-                <p className="text-emerald-100 text-base font-medium">Upcoming Contests</p>
-                <ArrowRightIcon className="h-4 w-4 mx-auto mt-3 transform transition-transform group-hover:translate-x-2" />
-              </div>
-            </Link>
-
-            <Link to="/past" className="group">
-              <div className="text-center p-6 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-white/20 rounded-full mb-4">
-                  <ClockIcon className="h-6 w-6" />
-                </div>
-                <h3 className="text-3xl font-bold mb-2">{stats.past}</h3>
-                <p className="text-blue-100 text-base font-medium">Past Contests</p>
-                <ArrowRightIcon className="h-4 w-4 mx-auto mt-3 transform transition-transform group-hover:translate-x-2" />
-              </div>
-            </Link>
-
-            <Link to="/profile" className="group">
-              <div className="text-center p-6 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-white/20 rounded-full mb-4">
-                  <BellIcon className="h-6 w-6" />
-                </div>
-                <h3 className="text-3xl font-bold mb-2">{stats.reminders}</h3>
-                <p className="text-violet-100 text-base font-medium">Active Reminders</p>
-                <ArrowRightIcon className="h-4 w-4 mx-auto mt-3 transform transition-transform group-hover:translate-x-2" />
-              </div>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Next Contests Section */}
-      <div className={`w-full px-6 py-12 ${isDark ? 'bg-gray-800' : 'bg-gradient-to-b from-gray-50 to-white'}`}>
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg">
-                <FireIcon className="h-6 w-6 text-white" />
-              </div>
-              <h2 className={`text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                Next Contests
-              </h2>
-            </div>
-            <Link 
-              to="/upcoming" 
-              className="inline-flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-300 font-medium text-sm"
-            >
-              <span>View all</span>
-              <ArrowRightIcon className="h-4 w-4" />
-            </Link>
-          </div>
-
-          {recentContests.length === 0 ? (
-            <div className="text-center py-16">
-              <SparklesIcon className={`h-20 w-20 mx-auto mb-4 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
-              <h3 className={`text-xl font-semibold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                No upcoming contests
-              </h3>
-              <p className={`text-base ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                Check back later for new contests!
+    <div className={`min-h-screen ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
+      {/* Header Section with gradient */}
+      <div className={`relative border-b ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
+        {/* Subtle gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-blue-500/5 pointer-events-none" />
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Welcome back, {user?.firstName || user?.username}
+              </h1>
+              <p className={`mt-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                Track your contests and manage reminders
               </p>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {recentContests.map((contest) => (
+            <div className="hidden sm:flex items-center gap-2">
+              <SparklesIcon className={`h-5 w-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
+              <span className={`text-sm font-medium ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>
+                All systems active
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Link to="/upcoming" className="group">
+            <div className={`relative rounded-xl border p-6 transition-all duration-300 overflow-hidden ${isDark ? 'bg-gray-900 border-gray-800 hover:border-purple-500/50' : 'bg-white border-gray-200 hover:border-purple-300 hover:shadow-lg'}`}>
+              {/* Gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              
+              <div className="relative flex items-center justify-between">
+                <div>
+                  <p className={`text-sm font-medium mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Upcoming Contests</p>
+                  <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stats.upcoming}</p>
+                  <p className={`text-xs mt-2 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Ready to compete</p>
+                </div>
+                <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 group-hover:scale-110 transition-transform">
+                  <CalendarDaysIcon className="h-8 w-8 text-white" />
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          <Link to="/past" className="group">
+            <div className={`relative rounded-xl border p-6 transition-all duration-300 overflow-hidden ${isDark ? 'bg-gray-900 border-gray-800 hover:border-blue-500/50' : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-lg'}`}>
+              {/* Gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              
+              <div className="relative flex items-center justify-between">
+                <div>
+                  <p className={`text-sm font-medium mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Past Contests</p>
+                  <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stats.past}</p>
+                  <p className={`text-xs mt-2 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Completed rounds</p>
+                </div>
+                <div className="p-4 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 group-hover:scale-110 transition-transform">
+                  <TrophyIcon className="h-8 w-8 text-white" />
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          <Link to="/profile" className="group">
+            <div className={`relative rounded-xl border p-6 transition-all duration-300 overflow-hidden ${isDark ? 'bg-gray-900 border-gray-800 hover:border-green-500/50' : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-lg'}`}>
+              {/* Gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              
+              <div className="relative flex items-center justify-between">
+                <div>
+                  <p className={`text-sm font-medium mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Active Reminders</p>
+                  <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stats.reminders}</p>
+                  <p className={`text-xs mt-2 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Notifications set</p>
+                </div>
+                <div className="p-4 rounded-xl bg-gradient-to-br from-green-500 to-green-600 group-hover:scale-110 transition-transform">
+                  <BellIcon className="h-8 w-8 text-white" />
+                </div>
+              </div>
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* Upcoming Contests Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Upcoming Contests
+            </h2>
+            <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Next contests starting soon
+            </p>
+          </div>
+          <Link 
+            to="/upcoming" 
+            className={`inline-flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isDark ? 'text-purple-400 hover:bg-gray-800 border border-gray-800' : 'text-purple-600 hover:bg-purple-50 border border-purple-200'}`}
+          >
+            View all
+            <ArrowRightIcon className="h-4 w-4" />
+          </Link>
+        </div>
+
+        {recentContests.length === 0 ? (
+          <div className={`rounded-xl border p-16 text-center ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
+            <CalendarDaysIcon className={`h-12 w-12 mx-auto mb-4 ${isDark ? 'text-gray-700' : 'text-gray-300'}`} />
+            <p className={`text-base font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
+              No upcoming contests
+            </p>
+            <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
+              Check back later for new contests
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {recentContests.map((contest) => {
+              const getPlatformBadge = (platform) => {
+                const badges = {
+                  'Codeforces': { 
+                    bg: isDark ? 'bg-blue-500/20 border-blue-500/30' : 'bg-blue-50 border-blue-200', 
+                    text: isDark ? 'text-blue-400' : 'text-blue-700' 
+                  },
+                  'CodeChef': { 
+                    bg: isDark ? 'bg-orange-500/20 border-orange-500/30' : 'bg-orange-50 border-orange-200', 
+                    text: isDark ? 'text-orange-400' : 'text-orange-700' 
+                  },
+                  'LeetCode': { 
+                    bg: isDark ? 'bg-yellow-500/20 border-yellow-500/30' : 'bg-yellow-50 border-yellow-200', 
+                    text: isDark ? 'text-yellow-400' : 'text-yellow-700' 
+                  },
+                };
+                return badges[platform] || { 
+                  bg: isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200', 
+                  text: isDark ? 'text-gray-300' : 'text-gray-700' 
+                };
+              };
+              const platformBadge = getPlatformBadge(contest.platform);
+              return (
                 <div 
                   key={contest.id} 
-                  className={`group relative p-5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border ${
-                    isDark 
-                      ? 'bg-gray-700 border-gray-600 hover:border-purple-500' 
-                      : 'bg-white border-gray-200 hover:border-purple-300'
-                  }`}
+                  className={`group rounded-xl border p-5 transition-all duration-300 hover:shadow-lg ${isDark ? 'bg-gray-900 border-gray-800 hover:border-gray-700' : 'bg-white border-gray-200 hover:border-gray-300'}`}
                 >
                   <div className="flex items-start justify-between mb-4">
-                    <div className={`p-2 bg-gradient-to-r ${getPlatformColor(contest.platform)} rounded-lg shadow-md`}>
-                      <TrophyIcon className="h-5 w-5 text-white" />
-                    </div>
-                    <div className="text-right">
-                      <p className="text-purple-600 dark:text-purple-400 font-bold text-base">
-                        {getTimeUntilContest(contest.contestStartDate)}
-                      </p>
-                      <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {Math.floor(contest.contestDuration / 60)} minutes
-                      </p>
-                    </div>
+                    <span className={`inline-flex items-center rounded-lg border px-3 py-1 text-xs font-semibold ${platformBadge.bg} ${platformBadge.text}`}>
+                      {contest.platform}
+                    </span>
+                    <span className={`text-xs font-medium px-2 py-1 rounded-md ${isDark ? 'bg-gray-800 text-gray-400' : 'bg-gray-100 text-gray-600'}`}>
+                      {Math.floor(contest.contestDuration / 60)}m
+                    </span>
                   </div>
                   
-                  <h3 className={`text-lg font-bold mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors ${
-                    isDark ? 'text-white' : 'text-gray-900'
-                  }`}>
+                  <h3 className={`text-base font-semibold mb-3 line-clamp-2 ${isDark ? 'text-white group-hover:text-purple-400' : 'text-gray-900 group-hover:text-purple-600'} transition-colors`}>
                     {contest.contestName}
                   </h3>
                   
-                  <div className="flex items-center justify-between">
-                    <p className={`font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                      {contest.platform}
-                    </p>
-                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                      {formatDate(contest.contestStartDate)}
-                    </p>
+                  <div className={`flex items-center justify-between text-sm border-t pt-3 ${isDark ? 'border-gray-800' : 'border-gray-100'}`}>
+                    <div className="flex items-center gap-1.5">
+                      <ClockIcon className={`h-4 w-4 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
+                      <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+                        {formatDate(contest.contestStartDate)}
+                      </span>
+                    </div>
+                    <span className={`font-semibold ${isDark ? 'text-purple-400' : 'text-purple-600'}`}>
+                      {getTimeUntilContest(contest.contestStartDate)}
+                    </span>
                   </div>
-                  
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 to-purple-500/0 group-hover:from-purple-500/5 group-hover:to-transparent rounded-xl transition-all duration-300"></div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Footer */}
-      <footer className={`w-full py-8 border-t ${
-        isDark 
-          ? 'bg-gray-800 border-gray-700' 
-          : 'bg-gray-50 border-gray-200'
-      }`}>
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              © 2025 CodeAlarm. All rights reserved.
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Made with
-              </span>
-              <HeartIcon className="h-4 w-4 text-red-500 fill-current" />
-              <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                by
-              </span>
-              <a 
-                href="https://github.com/Prathamesh-2005" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 font-medium text-sm transition-colors duration-300"
-              >
-                Prathamesh Jadhav
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

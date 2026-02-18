@@ -8,6 +8,7 @@ import PastContests from './pages/PastContests';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import SystemDesign from './pages/SystemDesign';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ForgotPassword from './components/ForgotPassword';
@@ -19,14 +20,14 @@ function AppContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-purple-500"></div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-200 border-t-gray-900 dark:border-gray-800 dark:border-t-gray-50"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Router>
         {isAuthenticated && <Navbar />}
         <main className="w-full">
@@ -54,6 +55,14 @@ function AppContent() {
             <Route 
               path="/profile" 
               element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} 
+            />
+            <Route 
+              path="/system-design" 
+              element={isAuthenticated ? <SystemDesign /> : <Navigate to="/login" />} 
+            />
+            <Route 
+              path="/system-design/:slug" 
+              element={isAuthenticated ? <SystemDesign /> : <Navigate to="/login" />} 
             />
             <Route 
               path="/forgot-password" 

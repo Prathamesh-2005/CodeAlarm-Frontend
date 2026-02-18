@@ -28,12 +28,16 @@ export const AuthProvider = ({ children }) => {
 
   const fetchProfile = async () => {
     try {
-      const response = await api.get('/auth/profile');
+      // Set a shorter timeout for profile check
+      const response = await api.get('/auth/profile', { timeout: 5000 });
       setUser(response.data);
     } catch (error) {
       console.error('Failed to fetch profile:', error);
-      localStorage.removeItem('token');
-      delete api.defaults.headers.common['Authorization'];
+      // Only clear token on 401 errors, not on network/timeout errors
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        delete api.defaults.headers.common['Authorization'];
+      }
     } finally {
       setLoading(false);
     }

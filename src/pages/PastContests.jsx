@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ContestCard from '../components/ContestCard';
+import { useTheme } from '../context/ThemeContext';
 import api from '../services/api';
 import { 
   CalendarDaysIcon, 
@@ -10,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 const PastContests = () => {
+  const { isDark } = useTheme();
   const [contests, setContests] = useState([]);
   const [filteredContests, setFilteredContests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -148,8 +150,11 @@ const PastContests = () => {
         <button
           key="prev"
           onClick={() => handlePageChange(currentPage - 1)}
-          className="px-3 py-2 mx-1 bg-white/10 backdrop-blur-md border border-white/20 text-white 
-                   rounded-lg hover:bg-white/20 transition-all duration-200"
+          className={`px-3 py-2 mx-1 border rounded-md text-sm transition-colors ${
+            isDark
+              ? 'bg-gray-900 border-gray-800 text-white hover:bg-gray-800'
+              : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'
+          }`}
         >
           Previous
         </button>
@@ -162,15 +167,20 @@ const PastContests = () => {
         <button
           key={1}
           onClick={() => handlePageChange(1)}
-          className="px-3 py-2 mx-1 bg-white/10 backdrop-blur-md border border-white/20 text-white 
-                   rounded-lg hover:bg-white/20 transition-all duration-200"
+          className={`px-3 py-2 mx-1 border rounded-md text-sm transition-colors ${
+            isDark
+              ? 'bg-gray-900 border-gray-800 text-white hover:bg-gray-800'
+              : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'
+          }`}
         >
           1
         </button>
       );
       if (startPage > 2) {
         pageNumbers.push(
-          <span key="ellipsis1" className="px-3 py-2 mx-1 text-gray-400">
+          <span key="ellipsis1" className={`px-3 py-2 mx-1 text-sm ${
+            isDark ? 'text-gray-500' : 'text-gray-400'
+          }`}>
             ...
           </span>
         );
@@ -183,10 +193,14 @@ const PastContests = () => {
         <button
           key={i}
           onClick={() => handlePageChange(i)}
-          className={`px-3 py-2 mx-1 border rounded-lg transition-all duration-200 ${
+          className={`px-3 py-2 mx-1 border rounded-md text-sm transition-colors ${
             currentPage === i
-              ? 'bg-purple-600 border-purple-600 text-white'
-              : 'bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20'
+              ? isDark
+                ? 'bg-white text-gray-900 border-white'
+                : 'bg-gray-900 text-white border-gray-900'
+              : isDark
+                ? 'bg-gray-900 border-gray-800 text-white hover:bg-gray-800'
+                : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'
           }`}
         >
           {i}
@@ -198,7 +212,9 @@ const PastContests = () => {
     if (endPage < totalPages) {
       if (endPage < totalPages - 1) {
         pageNumbers.push(
-          <span key="ellipsis2" className="px-3 py-2 mx-1 text-gray-400">
+          <span key="ellipsis2" className={`px-3 py-2 mx-1 text-sm ${
+            isDark ? 'text-gray-500' : 'text-gray-400'
+          }`}>
             ...
           </span>
         );
@@ -207,8 +223,11 @@ const PastContests = () => {
         <button
           key={totalPages}
           onClick={() => handlePageChange(totalPages)}
-          className="px-3 py-2 mx-1 bg-white/10 backdrop-blur-md border border-white/20 text-white 
-                   rounded-lg hover:bg-white/20 transition-all duration-200"
+          className={`px-3 py-2 mx-1 border rounded-md text-sm transition-colors ${
+            isDark
+              ? 'bg-gray-900 border-gray-800 text-white hover:bg-gray-800'
+              : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'
+          }`}
         >
           {totalPages}
         </button>
@@ -221,8 +240,11 @@ const PastContests = () => {
         <button
           key="next"
           onClick={() => handlePageChange(currentPage + 1)}
-          className="px-3 py-2 mx-1 bg-white/10 backdrop-blur-md border border-white/20 text-white 
-                   rounded-lg hover:bg-white/20 transition-all duration-200"
+          className={`px-3 py-2 mx-1 border rounded-md text-sm transition-colors ${
+            isDark
+              ? 'bg-gray-900 border-gray-800 text-white hover:bg-gray-800'
+              : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'
+          }`}
         >
           Next
         </button>
@@ -244,27 +266,40 @@ const PastContests = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-white text-lg">Loading past contests...</p>
-        </div>
+      <div className={`min-h-screen flex items-center justify-center ${
+        isDark ? 'bg-gray-950' : 'bg-gray-50'
+      }`}>
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-200 border-t-gray-900 dark:border-gray-800 dark:border-t-gray-50"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className={`min-h-screen flex items-center justify-center ${
+        isDark ? 'bg-gray-950' : 'bg-gray-50'
+      }`}>
         <div className="text-center max-w-md">
-          <div className="p-4 bg-red-500/20 rounded-full mb-4 inline-block">
-            <ExclamationTriangleIcon className="h-12 w-12 text-red-500" />
+          <div className={`p-4 rounded-full mb-4 inline-block ${
+            isDark ? 'bg-red-500/20' : 'bg-red-100'
+          }`}>
+            <ExclamationTriangleIcon className={`h-10 w-10 ${
+              isDark ? 'text-red-400' : 'text-red-600'
+            }`} />
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">Error Loading Past Contests</h3>
-          <p className="text-gray-400 mb-4">{error}</p>
+          <h3 className={`text-lg font-semibold mb-2 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>Error Loading Past Contests</h3>
+          <p className={`text-sm mb-4 ${
+            isDark ? 'text-gray-400' : 'text-gray-600'
+          }`}>{error}</p>
           <button
             onClick={fetchContests}
-            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200"
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              isDark
+                ? 'bg-white text-gray-900 hover:bg-gray-100'
+                : 'bg-gray-900 text-white hover:bg-gray-800'
+            }`}
           >
             Try Again
           </button>
@@ -274,57 +309,75 @@ const PastContests = () => {
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className={`min-h-screen ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl">
-              <TrophyIcon className="h-8 w-8 text-white" />
+        <div className={`mb-6 pb-6 border-b ${
+          isDark ? 'border-gray-800' : 'border-gray-200'
+        }`}>
+          <div className="flex items-center space-x-3">
+            <div className={`p-2 rounded-lg ${
+              isDark ? 'bg-gray-800' : 'bg-gray-100'
+            }`}>
+              <TrophyIcon className={`h-6 w-6 ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`} />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-white">Past Contests</h1>
-              <p className="text-gray-300">Browse through completed programming contests</p>
+              <h1 className={`text-xl font-semibold ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>Past Contests</h1>
+              <p className={`text-sm ${
+                isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>Browse through completed programming contests</p>
             </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/10 mb-6">
+        <div className={`rounded-lg p-4 border mb-6 ${
+          isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'
+        }`}>
           <div className="flex flex-wrap items-center gap-4 mb-4">
             {/* Search */}
             <div className="relative flex-1 min-w-64">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                <MagnifyingGlassIcon className={`h-4 w-4 ${
+                  isDark ? 'text-gray-500' : 'text-gray-400'
+                }`} />
               </div>
               <input
                 type="text"
                 placeholder="Search contests..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border border-white/20 rounded-xl 
-                         bg-white/10 backdrop-blur-md text-white placeholder-gray-400
-                         focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent
-                         transition-all duration-200"
+                className={`block w-full pl-10 pr-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 ${
+                  isDark 
+                    ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                }`}
               />
             </div>
 
             {/* Platform Filter */}
             <div className="relative">
               <div className="flex items-center space-x-2">
-                <FunnelIcon className="h-5 w-5 text-gray-400" />
+                <FunnelIcon className={`h-4 w-4 ${
+                  isDark ? 'text-gray-500' : 'text-gray-400'
+                }`} />
                 <select
                   value={selectedPlatform}
                   onChange={(e) => setSelectedPlatform(e.target.value)}
-                  className="bg-white/10 backdrop-blur-md border border-white/20 text-white 
-                           rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500
-                           appearance-none cursor-pointer min-w-40"
+                  className={`border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 cursor-pointer min-w-40 ${
+                    isDark 
+                      ? 'bg-gray-800 border-gray-700 text-white' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 >
                   {platforms.map(platform => (
                     <option 
                       key={platform} 
                       value={platform}
-                      className="bg-gray-800 text-white"
                     >
                       {platform === 'all' ? 'All Platforms' : platform.charAt(0).toUpperCase() + platform.slice(1)}
                     </option>
@@ -339,15 +392,19 @@ const PastContests = () => {
             {/* Start Date */}
             <div className="relative">
               <div className="flex items-center space-x-2">
-                <CalendarDaysIcon className="h-5 w-5 text-gray-400" />
+                <CalendarDaysIcon className={`h-4 w-4 ${
+                  isDark ? 'text-gray-500' : 'text-gray-400'
+                }`} />
                 <input
                   type="date"
                   placeholder="Start Date"
                   value={dateRange.startDate}
                   onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
-                  className="bg-white/10 backdrop-blur-md border border-white/20 text-white 
-                           rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500
-                           cursor-pointer min-w-40"
+                  className={`border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 cursor-pointer min-w-40 ${
+                    isDark 
+                      ? 'bg-gray-800 border-gray-700 text-white' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
               </div>
             </div>
@@ -355,15 +412,19 @@ const PastContests = () => {
             {/* End Date */}
             <div className="relative">
               <div className="flex items-center space-x-2">
-                <CalendarDaysIcon className="h-5 w-5 text-gray-400" />
+                <CalendarDaysIcon className={`h-4 w-4 ${
+                  isDark ? 'text-gray-500' : 'text-gray-400'
+                }`} />
                 <input
                   type="date"
                   placeholder="End Date"
                   value={dateRange.endDate}
                   onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
-                  className="bg-white/10 backdrop-blur-md border border-white/20 text-white 
-                           rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500
-                           cursor-pointer min-w-40"
+                  className={`border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 cursor-pointer min-w-40 ${
+                    isDark 
+                      ? 'bg-gray-800 border-gray-700 text-white' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
               </div>
             </div>
@@ -372,7 +433,11 @@ const PastContests = () => {
             {(searchTerm || selectedPlatform !== 'all' || dateRange.startDate || dateRange.endDate) && (
               <button
                 onClick={clearFilters}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200"
+                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  isDark
+                    ? 'bg-gray-800 text-white border border-gray-700 hover:bg-gray-700'
+                    : 'bg-white text-gray-900 border border-gray-300 hover:bg-gray-50'
+                }`}
               >
                 Clear Filters
               </button>
@@ -382,19 +447,25 @@ const PastContests = () => {
 
         {/* Contest Count and Pagination Info */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-gray-300 text-lg mb-2 sm:mb-0">
+          <p className={`text-sm mb-2 sm:mb-0 ${
+            isDark ? 'text-gray-400' : 'text-gray-600'
+          }`}>
             {filteredContests.length === 0 
               ? 'No past contests found' 
               : `Found ${filteredContests.length} past contest${filteredContests.length === 1 ? '' : 's'}`
             }
             {selectedPlatform !== 'all' && (
-              <span className="ml-2 px-2 py-1 bg-blue-500/20 text-blue-300 rounded-md text-sm">
+              <span className={`ml-2 px-2 py-0.5 rounded text-xs font-medium ${
+                isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-700'
+              }`}>
                 on {selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)}
               </span>
             )}
           </p>
           {filteredContests.length > 0 && (
-            <p className="text-gray-400 text-sm">
+            <p className={`text-xs ${
+              isDark ? 'text-gray-500' : 'text-gray-500'
+            }`}>
               Showing {indexOfFirstContest + 1}-{Math.min(indexOfLastContest, filteredContests.length)} of {filteredContests.length} contests
             </p>
           )}
@@ -403,11 +474,19 @@ const PastContests = () => {
         {/* Contest Grid */}
         {filteredContests.length === 0 ? (
           <div className="text-center py-12">
-            <div className="p-4 bg-gray-500/20 rounded-full mb-4 inline-block">
-              <TrophyIcon className="h-12 w-12 text-gray-400" />
+            <div className={`p-4 rounded-full mb-4 inline-block ${
+              isDark ? 'bg-gray-800' : 'bg-gray-100'
+            }`}>
+              <TrophyIcon className={`h-10 w-10 ${
+                isDark ? 'text-gray-600' : 'text-gray-400'
+              }`} />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No Past Contests Found</h3>
-            <p className="text-gray-400 mb-4">
+            <h3 className={`text-base font-semibold mb-2 ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>No Past Contests Found</h3>
+            <p className={`text-sm mb-4 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>
               {searchTerm 
                 ? `No contests match your search "${searchTerm}"` 
                 : selectedPlatform !== 'all' 
@@ -420,7 +499,11 @@ const PastContests = () => {
             {(searchTerm || selectedPlatform !== 'all' || dateRange.startDate || dateRange.endDate) && (
               <button
                 onClick={clearFilters}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200"
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                  isDark
+                    ? 'bg-white text-gray-900 hover:bg-gray-100'
+                    : 'bg-gray-900 text-white hover:bg-gray-800'
+                }`}
               >
                 Clear Filters
               </button>
@@ -428,7 +511,7 @@ const PastContests = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {currentContests.map((contest) => (
                 <ContestCard
                   key={contest.id}
@@ -446,7 +529,9 @@ const PastContests = () => {
                   {renderPagination()}
                 </div>
                 <div className="text-center mt-4">
-                  <p className="text-gray-400 text-sm">
+                  <p className={`text-xs ${
+                    isDark ? 'text-gray-500' : 'text-gray-500'
+                  }`}>
                     Page {currentPage} of {totalPages}
                   </p>
                 </div>

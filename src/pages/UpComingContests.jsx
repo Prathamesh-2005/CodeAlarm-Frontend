@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import ContestCard from '../components/ContestCard';
 import ReminderModal from '../components/ReminderModel';
+import { useTheme } from '../context/ThemeContext';
 import { 
-  CalendarDaysIcon, 
   FunnelIcon, 
   MagnifyingGlassIcon,
   ExclamationTriangleIcon,
@@ -11,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 const UpcomingContests = () => {
+  const { isDark } = useTheme();
   const [contests, setContests] = useState([]);
   const [filteredContests, setFilteredContests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,24 +35,20 @@ const UpcomingContests = () => {
   const fetchContests = async () => {
     try {
       setError(null);
-      console.log('🔄 Fetching contests...');
       
       const response = await api.get('/contests/all');
-      console.log('📥 Raw API response:', response.data);
       
       const now = new Date();
       const upcoming = response.data
         .filter(contest => {
           const contestDate = new Date(contest.contestStartDate);
-          console.log(`📅 Contest: ${contest.contestName}, Start: ${contestDate}, Now: ${now}, Upcoming: ${contestDate > now}`);
           return contestDate > now;
         })
         .sort((a, b) => new Date(a.contestStartDate) - new Date(b.contestStartDate));
       
-      console.log(`✅ Found ${upcoming.length} upcoming contests out of ${response.data.length} total`);
       setContests(upcoming);
     } catch (error) {
-      console.error('❌ Failed to fetch contests:', error);
+      console.error('Failed to fetch contests:', error);
       setError(`Failed to fetch contests: ${error.response?.data || error.message}`);
     } finally {
       setLoading(false);
@@ -73,7 +70,6 @@ const UpcomingContests = () => {
       );
     }
 
-    console.log(`🔍 Filtered to ${filtered.length} contests`);
     setFilteredContests(filtered);
   };
 
@@ -87,12 +83,9 @@ const UpcomingContests = () => {
     setSelectedContest(null);
   };
 
-  // Manual fetch from all platforms
   const handleFetchAllContests = async () => {
     setFetchingContests(true);
     try {
-      console.log('🚀 Triggering manual fetch from all platforms...');
-      
       const platforms = [
         { name: 'Codeforces', endpoint: '/codeforces/fetch' },
         { name: 'CodeChef', endpoint: '/codechef/fetch' },
@@ -102,24 +95,20 @@ const UpcomingContests = () => {
       const fetchPromises = platforms.map(async (platform) => {
         try {
           const response = await api.get(platform.endpoint);
-          console.log(`✅ ${platform.name}: ${response.data}`);
           return { platform: platform.name, status: 'success', message: response.data };
         } catch (error) {
-          console.error(`❌ ${platform.name} fetch failed:`, error);
           return { platform: platform.name, status: 'error', message: error.message };
         }
       });
 
-      const results = await Promise.all(fetchPromises);
-      console.log('📊 Fetch results:', results);
+      await Promise.all(fetchPromises);
 
-      // Wait a bit for data to be saved, then refresh
       setTimeout(() => {
         fetchContests();
       }, 2000);
 
     } catch (error) {
-      console.error('❌ Error during manual fetch:', error);
+      console.error('Error during manual fetch:', error);
     } finally {
       setFetchingContests(false);
     }
@@ -127,27 +116,28 @@ const UpcomingContests = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-white text-lg">Loading contests...</p>
-        </div>
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-200 border-t-gray-900 dark:border-gray-800 dark:border-t-gray-50"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
         <div className="text-center max-w-md">
-          <div className="p-4 bg-red-500/20 rounded-full mb-4 inline-block">
-            <ExclamationTriangleIcon className="h-12 w-12 text-red-500" />
-          </div>
-          <h3 className="text-xl font-semibold text-white mb-2">Error Loading Contests</h3>
-          <p className="text-gray-400 mb-4">{error}</p>
+          <ExclamationTriangleIcon className={`h-12 w-12 mx-auto mb-4 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
+          <h3 className={`text-lg font-semibold mb-2 ${isDark ? 'text-gray-50' : 'text-gray-900'}`}>
+            Error Loading Contests
+          </h3>
+          <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{error}</p>
           <button
             onClick={fetchContests}
-            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200"
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              isDark
+                ? 'bg-gray-50 text-gray-900 hover:bg-gray-200'
+                : 'bg-gray-900 text-white hover:bg-gray-800'
+            }`}
           >
             Try Again
           </button>
@@ -157,70 +147,75 @@ const UpcomingContests = () => {
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className={`min-h-screen ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="p-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl">
-                <CalendarDaysIcon className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-white">Upcoming Contests</h1>
-                <p className="text-gray-300">Don't miss any coding competitions</p>
-              </div>
-            </div>
-            
-            {/* Manual Fetch Button */}
-            <button
-              onClick={handleFetchAllContests}
-              disabled={fetchingContests}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 
-                       disabled:bg-blue-800 text-white rounded-lg transition-colors duration-200"
-            >
-              <ArrowPathIcon className={`h-5 w-5 ${fetchingContests ? 'animate-spin' : ''}`} />
-              <span>{fetchingContests ? 'Fetching...' : 'Refresh Contests'}</span>
-            </button>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className={`text-2xl font-semibold ${isDark ? 'text-gray-50' : 'text-gray-900'}`}>
+              Upcoming Contests
+            </h1>
+            <p className={`mt-1 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              {filteredContests.length} contest{filteredContests.length !== 1 ? 's' : ''} found
+            </p>
           </div>
+          
+          <button
+            onClick={handleFetchAllContests}
+            disabled={fetchingContests}
+            className={`inline-flex items-center px-3 py-2 border rounded-md text-sm font-medium transition-colors ${
+              isDark
+                ? 'border-gray-800 text-gray-300 hover:bg-gray-900 disabled:opacity-50'
+                : 'border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50'
+            }`}
+          >
+            <ArrowPathIcon className={`h-4 w-4 mr-2 ${fetchingContests ? 'animate-spin' : ''}`} />
+            {fetchingContests ? 'Refreshing...' : 'Refresh'}
+          </button>
         </div>
 
         {/* Filters */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/10 mb-6">
-          <div className="flex flex-wrap items-center gap-4">
+        <div className={`rounded-lg border p-4 mb-6 ${
+          isDark 
+            ? 'bg-gray-900 border-gray-800' 
+            : 'bg-white border-gray-200'
+        }`}>
+          <div className="flex flex-col sm:flex-row gap-4">
             {/* Search */}
-            <div className="relative flex-1 min-w-64">
+            <div className="relative flex-1">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                <MagnifyingGlassIcon className={`h-4 w-4 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
               </div>
               <input
                 type="text"
                 placeholder="Search contests..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border border-white/20 rounded-xl 
-                         bg-white/10 backdrop-blur-md text-white placeholder-gray-400
-                         focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent
-                         transition-all duration-200"
+                className={`block w-full pl-10 px-3 py-2 border rounded-md text-sm transition-colors ${
+                  isDark
+                    ? 'bg-gray-950 border-gray-800 text-gray-50 placeholder-gray-500 focus:border-gray-700'
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-gray-400'
+                } focus:outline-none focus:ring-0`}
               />
             </div>
 
             {/* Platform Filter */}
             <div className="relative">
               <div className="flex items-center space-x-2">
-                <FunnelIcon className="h-5 w-5 text-gray-400" />
+                <FunnelIcon className={`h-4 w-4 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
                 <select
                   value={selectedPlatform}
                   onChange={(e) => setSelectedPlatform(e.target.value)}
-                  className="bg-white/10 backdrop-blur-md border border-white/20 text-white 
-                           rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500
-                           appearance-none cursor-pointer min-w-40"
+                  className={`px-3 py-2 border rounded-md text-sm transition-colors ${
+                    isDark
+                      ? 'bg-gray-950 border-gray-800 text-gray-50'
+                      : 'bg-white border-gray-300 text-gray-900'
+                  } focus:outline-none focus:ring-0 cursor-pointer`}
                 >
                   {platforms.map(platform => (
                     <option 
                       key={platform} 
                       value={platform}
-                      className="bg-gray-800 text-white"
                     >
                       {platform === 'all' ? 'All Platforms' : platform.charAt(0).toUpperCase() + platform.slice(1)}
                     </option>
@@ -231,33 +226,18 @@ const UpcomingContests = () => {
           </div>
         </div>
 
-        {/* Contest Count */}
-        <div className="mb-6">
-          <p className="text-gray-300 text-lg">
-            {filteredContests.length === 0 
-              ? 'No contests found' 
-              : `Found ${filteredContests.length} upcoming contest${filteredContests.length === 1 ? '' : 's'}`
-            }
-            {selectedPlatform !== 'all' && (
-              <span className="ml-2 px-2 py-1 bg-blue-500/20 text-blue-300 rounded-md text-sm">
-                on {selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)}
-              </span>
-            )}
-          </p>
-        </div>
-
         {/* Contest Grid */}
         {filteredContests.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="p-4 bg-gray-500/20 rounded-full mb-4 inline-block">
-              <CalendarDaysIcon className="h-12 w-12 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No Contests Found</h3>
-            <p className="text-gray-400 mb-4">
+          <div className={`rounded-lg border p-12 text-center ${
+            isDark 
+              ? 'bg-gray-900 border-gray-800' 
+              : 'bg-white border-gray-200'
+          }`}>
+            <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
               {searchQuery 
-                ? `No contests match your search "${searchQuery}"` 
+                ? `No contests match "${searchQuery}"` 
                 : selectedPlatform !== 'all' 
-                  ? `No upcoming contests on ${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)}`
+                  ? `No upcoming contests on ${selectedPlatform}`
                   : 'No upcoming contests available'
               }
             </p>
@@ -267,14 +247,18 @@ const UpcomingContests = () => {
                   setSearchQuery('');
                   setSelectedPlatform('all');
                 }}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200"
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isDark
+                    ? 'bg-gray-50 text-gray-900 hover:bg-gray-200'
+                    : 'bg-gray-900 text-white hover:bg-gray-800'
+                }`}
               >
                 Clear Filters
               </button>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredContests.map((contest) => (
               <ContestCard 
                 key={`${contest.platform}-${contest.contestId || contest.contestName}`}
@@ -282,15 +266,6 @@ const UpcomingContests = () => {
                 onSetReminder={handleSetReminder}
               />
             ))}
-          </div>
-        )}
-
-        {/* Load More Button (if needed) */}
-        {filteredContests.length > 0 && contests.length > filteredContests.length && (
-          <div className="text-center mt-8">
-            <p className="text-gray-400 mb-4">
-              Showing {filteredContests.length} of {contests.length} contests
-            </p>
           </div>
         )}
 

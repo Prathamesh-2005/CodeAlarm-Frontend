@@ -9,7 +9,7 @@ import {
   ClockIcon, 
   UserCircleIcon, 
   ArrowRightOnRectangleIcon,
-  TrophyIcon
+  BookOpenIcon
 } from '@heroicons/react/24/outline';
 
 const Navbar = () => {
@@ -20,67 +20,78 @@ const Navbar = () => {
   const navItems = [
     { path: '/', label: 'Home', icon: HomeIcon },
     { path: '/upcoming', label: 'Upcoming', icon: CalendarDaysIcon },
-    { path: '/past', label: 'Past Contests', icon: ClockIcon },
+    { path: '/past', label: 'Past', icon: ClockIcon },
+    { path: '/system-design', label: 'System Design', icon: BookOpenIcon },
     { path: '/profile', label: 'Profile', icon: UserCircleIcon },
   ];
 
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className={`${
+    <nav className={`border-b ${
       isDark 
-        ? 'bg-gray-800 border-gray-700' 
+        ? 'bg-gray-900 border-gray-800' 
         : 'bg-white border-gray-200'
-    } border-b sticky top-0 z-50 transition-colors duration-300 shadow-sm`}>
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
+    } sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-background/60`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3 group">
-            <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl group-hover:scale-110 transition-transform duration-300">
+          <Link to="/" className="flex items-center space-x-2 group">
+            <div className={`flex items-center justify-center w-8 h-8 rounded-md ${
+              isDark ? 'bg-gray-800' : 'bg-gray-100'
+            }`}>
               <img 
                 src="/contest_tracker_homepage_logo.svg" 
-                alt="CodeAlarm Logo" 
-                className="h-8 w-8 text-white"
+                alt="CodeAlarm" 
+                className="h-5 w-5"
               />
             </div>
-            <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+            <span className={`text-lg font-semibold ${
+              isDark ? 'text-gray-50' : 'text-gray-900'
+            }`}>
               CodeAlarm
             </span>
           </Link>
 
           {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-2">
+          <div className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 ${
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive(item.path)
-                      ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-500 dark:text-purple-400 border border-purple-500/30'
-                      : `${isDark ? 'text-gray-300 hover:text-white hover:bg-gray-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`
+                      ? isDark
+                        ? 'bg-gray-800 text-gray-50'
+                        : 'bg-gray-100 text-gray-900'
+                      : isDark
+                        ? 'text-gray-400 hover:text-gray-50 hover:bg-gray-800/50'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span className="font-medium text-base">{item.label}</span>
+                  <Icon className="h-4 w-4" />
+                  <span>{item.label}</span>
                 </Link>
               );
             })}
           </div>
 
           {/* Right Side */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             {/* User Info */}
-            <div className={`flex items-center space-x-3 px-4 py-3 rounded-lg ${
-              isDark ? 'bg-gray-700' : 'bg-gray-100'
+            <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-md ${
+              isDark ? 'bg-gray-800' : 'bg-gray-100'
             }`}>
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-semibold text-sm">
-                  {user?.firstName?.[0]?.toUpperCase() || 'U'}
-                </span>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
+                isDark ? 'bg-gray-700 text-gray-200' : 'bg-gray-200 text-gray-700'
+              }`}>
+                {user?.firstName?.[0]?.toUpperCase() || 'U'}
               </div>
-              <span className={`font-medium text-base hidden sm:block ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <span className={`text-sm font-medium hidden sm:block ${
+                isDark ? 'text-gray-200' : 'text-gray-700'
+              }`}>
                 {user?.firstName || user?.username}
               </span>
             </div>
@@ -88,10 +99,14 @@ const Navbar = () => {
             {/* Logout */}
             <button
               onClick={logout}
-              className="p-3 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-300 group"
+              className={`p-2 rounded-md text-sm font-medium transition-colors ${
+                isDark
+                  ? 'text-gray-400 hover:text-gray-50 hover:bg-gray-800'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
               title="Logout"
             >
-              <ArrowRightOnRectangleIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+              <ArrowRightOnRectangleIcon className="h-5 w-5" />
             </button>
           </div>
         </div>
