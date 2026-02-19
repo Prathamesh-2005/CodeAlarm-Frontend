@@ -4,8 +4,14 @@ import axios from "axios";
 import "./SystemDesign.css";
 import { useNavigate, useParams } from "react-router-dom";
 
+const SUPABASE_URL = 'https://yvnqfabssvyfofoswqjw.supabase.co';
+const CHAPTERS_URL = `${SUPABASE_URL}/storage/v1/object/public/system-design-data/chapters/chapters.json`;
+const ALL_CHAPTERS_URL = `${SUPABASE_URL}/storage/v1/object/public/system-design-data/chapters/all-chapters.json`;
+const IMAGES_BASE_URL = `${SUPABASE_URL}/storage/v1/object/public/system-design-images/images/`;
+
 export const SystemDesign = () => {
 	const [chapters, setChapters] = useState([]);
+	const [allChaptersData, setAllChaptersData] = useState([]);
 	const [chapterContent, setChapterContent] = useState(null);
 	const [activeChapter, setActiveChapter] = useState(null);
 	const [activeSubSection, setActiveSubSection] = useState(null);
@@ -16,42 +22,41 @@ export const SystemDesign = () => {
 	const { slug } = useParams();
 
 	useEffect(() => {
-		const fetchChapters = async () => {
+		const fetchData = async () => {
 			try {
 				setLoading(true);
-				const response = await axios.get(
-					"/api/nextleet/api/system-design/chapters"
-				);
-				setChapters(response.data.data || []);
+				const chaptersResponse = await axios.get(CHAPTERS_URL);
+				setChapters(chaptersResponse.data || []);
+				
+				const allChaptersResponse = await axios.get(ALL_CHAPTERS_URL);
+				setAllChaptersData(allChaptersResponse.data || []);
 			} catch (error) {
 				console.error("Error fetching chapters:", error);
 			} finally {
 				setLoading(false);
 			}
 		};
-		fetchChapters();
+		fetchData();
 		if (slug) {
 			setActiveChapter(slug);
 		}
 	}, [slug]);
 
 	useEffect(() => {
-		const fetchChapterContent = async () => {
-			if (!activeChapter) return;
-			try {
-				const response = await axios.get(
-					`/api/nextleet/api/system-design/chapters/${activeChapter}`
-				);
-				setChapterContent(response.data.data);
-				if (response.data.data?.sections?.length > 0) {
-					setActiveSubSection(response.data.data.sections[0].slug);
+		const loadChapterContent = () => {
+			if (!activeChapter || allChaptersData.length === 0) return;
+			
+			// Find chapter content from allChaptersData
+			const content = allChaptersData.find(ch => ch.slug === activeChapter);
+			if (content) {
+				setChapterContent(content);
+				if (content.sections?.length > 0) {
+					setActiveSubSection(content.sections[0].slug);
 				}
-			} catch (error) {
-				console.error("Error fetching chapter content:", error);
 			}
 		};
-		fetchChapterContent();
-	}, [activeChapter]);
+		loadChapterContent();
+	}, [activeChapter, allChaptersData]);
 
 	const toggleChapter = (slug) => {
 		setActiveChapter((prev) => (prev === slug ? null : slug));
@@ -161,10 +166,10 @@ export const SystemDesign = () => {
 					{chapterContent ? (
 						<div className="w-full">
 							{chapterContent.sections?.map((section) => {
-								// Fix all relative image paths to use correct domain
+								// Fix all image paths to use Supabase storage
 								const fixedContent = section.content
-									.replace(/src="images\//g, 'src="https://nextleet.com/images/')
-									.replace(/src='images\//g, "src='https://nextleet.com/images/");
+									.replace(/src="images\//g, `src="${IMAGES_BASE_URL}`)
+									.replace(/src='images\//g, `src='${IMAGES_BASE_URL}`);
 								
 								return (
 									<div key={section.slug} className="w-full mb-4 relative">

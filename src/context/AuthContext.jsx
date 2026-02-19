@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
 
-// Create and export the AuthContext
 export const AuthContext = createContext();
 
 export const useAuth = () => {
@@ -28,12 +27,10 @@ export const AuthProvider = ({ children }) => {
 
   const fetchProfile = async () => {
     try {
-      // Set a shorter timeout for profile check
-      const response = await api.get('/auth/profile', { timeout: 5000 });
+      const response = await api.get('/auth/profile', { timeout: 40000 });
       setUser(response.data);
     } catch (error) {
       console.error('Failed to fetch profile:', error);
-      // Only clear token on 401 errors, not on network/timeout errors
       if (error.response?.status === 401) {
         localStorage.removeItem('token');
         delete api.defaults.headers.common['Authorization'];

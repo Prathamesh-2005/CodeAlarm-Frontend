@@ -4,7 +4,7 @@ const API_BASE_URL = 'https://code-alarm-2.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000, 
+  timeout: 40000, 
   headers: {
     'Content-Type': 'application/json',
   },
@@ -37,11 +37,11 @@ api.interceptors.response.use(
 
 
 export const login = async (credentials) => {
-  return await api.post('/auth/login', credentials);
+  return await api.post('/auth/login', credentials, { timeout: 40000 });
 };
 
 export const register = async (userData) => {
-  return await api.post('/auth/register', userData);
+  return await api.post('/auth/register', userData, { timeout: 40000 });
 };
 
 export const getUserProfile = async () => {
@@ -98,7 +98,8 @@ export const forgotPassword = async (data) => {
     }, {
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      timeout: 40000
     });
     return response.data;
   } catch (error) {
