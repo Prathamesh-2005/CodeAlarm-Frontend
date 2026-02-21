@@ -4,7 +4,7 @@ const API_BASE_URL = 'https://code-alarm-2.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 60000, // 60 seconds for free tier backend wake-up time
+  timeout: 60000, 
   headers: {
     'Content-Type': 'application/json',
   },
@@ -23,7 +23,6 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -47,12 +46,10 @@ export const getUserProfile = async () => {
   return await api.get('/auth/profile');
 };
 
-// User preferences
 export const updatePreferences = async (preferences) => {
   return await api.put('/auth/preferences', preferences);
 };
 
-// Reminders API functions
 export const getUserReminders = async () => {
   return await api.get('/reminders/my-reminders');
 };
@@ -69,7 +66,6 @@ export const deleteReminder = async (id) => {
   return await api.delete(`/reminders/${id}`);
 };
 
-// Contests API functions
 export const getContests = async (params = {}) => {
   return await api.get('/contests', { params });
 };
@@ -93,12 +89,12 @@ export const getFavoriteContests = async () => {
 export const forgotPassword = async (data) => {
   try {
     const response = await api.post('/auth/forgot-password', {
-      email: data.email  // Ensure proper payload structure
+      email: data.email  
     }, {
       headers: {
         'Content-Type': 'application/json'
       },
-      timeout: 90000  // 90 seconds for email sending + server wake-up
+      timeout: 90000  
     });
     return response.data;
   } catch (error) {
@@ -117,5 +113,4 @@ export const resetPassword = async (data) => {
   return response.data;
 };
 
-// Default export
 export default api;

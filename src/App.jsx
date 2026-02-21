@@ -18,13 +18,21 @@ import './App.css';
 function AppContent() {
   const { isAuthenticated, loading } = useAuth();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-200 border-t-gray-900 dark:border-gray-800 dark:border-t-gray-50"></div>
-      </div>
-    );
-  }
+if (loading) {
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center gap-4 px-4 text-center">
+      
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-200 border-t-gray-900 dark:border-gray-800 dark:border-t-gray-50"></div>
+
+      <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md">
+        🚀 Our backend is hosted on Render free tier. It may take a few seconds to wake up after inactivity. 
+        Thank you for your patience!
+      </p>
+
+    </div>
+  );
+}
+
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
