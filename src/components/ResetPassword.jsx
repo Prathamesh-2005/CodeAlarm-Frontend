@@ -11,11 +11,7 @@ const ResetPassword = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [stats, setStats] = useState({
-    upcoming: 125,
-    past: 342,
-    reminders: 568
-  });
+  const [stats] = useState({ upcoming: 125, past: 342, reminders: 568 });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
@@ -45,84 +41,162 @@ const ResetPassword = () => {
     }
   };
 
+  // Design tokens
+  const bg = isDark ? '#0a0a0a' : '#f5f5f5';
+  const surface = isDark ? '#111111' : '#ffffff';
+  const border = isDark ? '#1e1e1e' : '#e5e7eb';
+  const textPri = isDark ? '#f0f0f0' : '#111111';
+  const textSec = isDark ? '#666666' : '#9ca3af';
+  const inputBg = isDark ? '#161616' : '#f9fafb';
+
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div style={{ minHeight: '100vh', background: bg, fontFamily: '"DM Sans", sans-serif' }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+        @keyframes spin { to { transform: rotate(360deg); } }
+        * { box-sizing: border-box; }
+      `}</style>
+
       {/* Header */}
-      <header className={`w-full ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Link to="/">
-              <img 
-                src="/contest_tracker_homepage_logo.svg" 
-                alt="CodeAlarm" 
-                className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity" 
-              />
-            </Link>
-            <Link to="/" className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} hover:opacity-80 transition-opacity`}>
-              CodeAlarm
-            </Link>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Link 
-              to="/login" 
-              className={`px-4 py-2 rounded-lg font-medium ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'} transition-colors`}
-            >
+      <header style={{
+        width: '100%',
+        background: surface,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+        borderBottom: `1.5px solid ${border}`,
+      }}>
+        <div style={{
+          maxWidth: 1400,
+          margin: '0 auto',
+          padding: '16px 28px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', transition: 'opacity 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+            <AlarmClock style={{ width: 20, height: 20, color: isDark ? '#a78bfa' : '#7c3aed' }} />
+            <span style={{ fontSize: 16, fontWeight: 800, color: textPri, letterSpacing: '-0.3px' }}>CodeAlarm</span>
+          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Link to="/login" style={{
+              padding: '9px 16px',
+              borderRadius: 10,
+              fontSize: 14,
+              fontWeight: 600,
+              color: textSec,
+              textDecoration: 'none',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = textPri; e.currentTarget.style.background = inputBg; }}
+            onMouseLeave={e => { e.currentTarget.style.color = textSec; e.currentTarget.style.background = 'transparent'; }}>
               Sign In
             </Link>
-            <Link 
-              to="/register" 
-              className={`px-4 py-2 rounded-lg font-medium ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'} transition-colors`}
-            >
+            <Link to="/register" style={{
+              padding: '9px 16px',
+              borderRadius: 10,
+              fontSize: 14,
+              fontWeight: 600,
+              color: textSec,
+              textDecoration: 'none',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = textPri; e.currentTarget.style.background = inputBg; }}
+            onMouseLeave={e => { e.currentTarget.style.color = textSec; e.currentTarget.style.background = 'transparent'; }}>
               Register
             </Link>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col lg:flex-row gap-12 items-center">
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '48px 28px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 48, alignItems: 'center' }} className="lg-flex-row">
           {/* Left Side - Reset Password Form */}
-          <div className={`w-full lg:w-1/2 p-8 rounded-xl shadow-lg ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
-            <div className="flex flex-col items-center mb-6">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-600 to-blue-500 mb-4">
-                <Key className="h-8 w-8 text-white" />
+          <div style={{
+            width: '100%',
+            maxWidth: 500,
+            padding: 32,
+            borderRadius: 16,
+            boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+            background: surface,
+            border: `1.5px solid ${border}`,
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 28 }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 64,
+                height: 64,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%)',
+                marginBottom: 16,
+              }}>
+                <Key style={{ width: 32, height: 32, color: '#fff' }} />
               </div>
-              <h1 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Reset Password</h1>
-              <p className={`mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              <h1 style={{ fontSize: 32, fontWeight: 800, color: textPri, marginBottom: 8, letterSpacing: '-0.5px' }}>
+                Reset Password
+              </h1>
+              <p style={{ margin: 0, fontSize: 15, color: textSec }}>
                 Set a new password for your account
               </p>
             </div>
 
-            <form className="space-y-4" onSubmit={handleSubmit}>
+            <form style={{ display: 'flex', flexDirection: 'column', gap: 18 }} onSubmit={handleSubmit}>
               {error && (
-                <div className={`p-4 rounded-lg ${isDark ? 'bg-red-900/30 border border-red-700' : 'bg-red-50 border border-red-200'}`}>
-                  <div className="flex items-center">
-                    <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                <div style={{
+                  padding: 16,
+                  borderRadius: 10,
+                  border: `1.5px solid ${isDark ? '#7f1d1d' : '#fecaca'}`,
+                  background: isDark ? 'rgba(220, 38, 38, 0.1)' : '#fef2f2',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <svg style={{ width: 20, height: 20, color: '#ef4444' }} viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
-                    <p className={`ml-3 text-sm ${isDark ? 'text-red-300' : 'text-red-700'}`}>{error}</p>
+                    <p style={{ marginLeft: 12, fontSize: 14, color: isDark ? '#f87171' : '#dc2626' }}>{error}</p>
                   </div>
                 </div>
               )}
 
               {message && (
-                <div className={`p-4 rounded-lg ${isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200'}`}>
-                  <div className="flex items-center">
-                    <svg className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                <div style={{
+                  padding: 16,
+                  borderRadius: 10,
+                  border: `1.5px solid ${isDark ? '#065f46' : '#86efac'}`,
+                  background: isDark ? 'rgba(16, 185, 129, 0.1)' : '#f0fdf4',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <svg style={{ width: 20, height: 20, color: '#10b981' }} viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    <p className={`ml-3 text-sm ${isDark ? 'text-green-300' : 'text-green-700'}`}>{message}</p>
+                    <p style={{ marginLeft: 12, fontSize: 14, color: isDark ? '#4ade80' : '#16a34a' }}>{message}</p>
                   </div>
                 </div>
               )}
 
               <div>
-                <label htmlFor="password" className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
+                <label htmlFor="password" style={{
+                  display: 'block',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: textSec,
+                  marginBottom: 6,
+                }}>
                   New Password
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Key className="h-5 w-5 text-gray-400" />
+                <div style={{ position: 'relative' }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    bottom: 0,
+                    paddingLeft: 12,
+                    display: 'flex',
+                    alignItems: 'center',
+                    pointerEvents: 'none',
+                  }}>
+                    <Key style={{ width: 18, height: 18, color: textSec }} />
                   </div>
                   <input
                     id="password"
@@ -131,30 +205,73 @@ const ResetPassword = () => {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={`block w-full pl-10 pr-10 py-3 rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600 text-white focus:ring-purple-500 focus:border-purple-500' : 'bg-white border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500'} placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200`}
                     placeholder="Enter new password"
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      paddingLeft: 44,
+                      paddingRight: 44,
+                      paddingTop: 12,
+                      paddingBottom: 12,
+                      borderRadius: 10,
+                      border: `1.5px solid ${border}`,
+                      background: inputBg,
+                      color: textPri,
+                      fontSize: 14,
+                      outline: 'none',
+                      transition: 'border-color 0.15s',
+                      fontFamily: 'inherit',
+                    }}
+                    onFocus={e => e.target.style.borderColor = '#7c3aed'}
+                    onBlur={e => e.target.style.borderColor = border}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      right: 0,
+                      bottom: 0,
+                      paddingRight: 12,
+                      display: 'flex',
+                      alignItems: 'center',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: textSec,
+                      transition: 'color 0.15s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.color = textPri}
+                    onMouseLeave={e => e.currentTarget.style.color = textSec}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-500" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
-                    )}
+                    {showPassword ? <EyeOff style={{ width: 18, height: 18 }} /> : <Eye style={{ width: 18, height: 18 }} />}
                   </button>
                 </div>
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
+                <label htmlFor="confirmPassword" style={{
+                  display: 'block',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: textSec,
+                  marginBottom: 6,
+                }}>
                   Confirm Password
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Key className="h-5 w-5 text-gray-400" />
+                <div style={{ position: 'relative' }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    bottom: 0,
+                    paddingLeft: 12,
+                    display: 'flex',
+                    alignItems: 'center',
+                    pointerEvents: 'none',
+                  }}>
+                    <Key style={{ width: 18, height: 18, color: textSec }} />
                   </div>
                   <input
                     id="confirmPassword"
@@ -163,40 +280,87 @@ const ResetPassword = () => {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={`block w-full pl-10 pr-10 py-3 rounded-lg border ${isDark ? 'bg-gray-700 border-gray-600 text-white focus:ring-purple-500 focus:border-purple-500' : 'bg-white border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500'} placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200`}
                     placeholder="Confirm new password"
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      paddingLeft: 44,
+                      paddingRight: 44,
+                      paddingTop: 12,
+                      paddingBottom: 12,
+                      borderRadius: 10,
+                      border: `1.5px solid ${border}`,
+                      background: inputBg,
+                      color: textPri,
+                      fontSize: 14,
+                      outline: 'none',
+                      transition: 'border-color 0.15s',
+                      fontFamily: 'inherit',
+                    }}
+                    onFocus={e => e.target.style.borderColor = '#7c3aed'}
+                    onBlur={e => e.target.style.borderColor = border}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      right: 0,
+                      bottom: 0,
+                      paddingRight: 12,
+                      display: 'flex',
+                      alignItems: 'center',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: textSec,
+                      transition: 'color 0.15s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.color = textPri}
+                    onMouseLeave={e => e.currentTarget.style.color = textSec}
                   >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-500" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
-                    )}
+                    {showConfirmPassword ? <EyeOff style={{ width: 18, height: 18 }} /> : <Eye style={{ width: 18, height: 18 }} />}
                   </button>
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div style={{ paddingTop: 8 }}>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex justify-center items-center py-3 px-4 text-sm font-medium rounded-lg text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '12px 18px',
+                    fontSize: 14,
+                    fontWeight: 700,
+                    borderRadius: 10,
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%)',
+                    border: 'none',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    opacity: loading ? 0.6 : 1,
+                    transition: 'all 0.15s',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                    fontFamily: 'inherit',
+                  }}
+                  onMouseEnter={e => { if (!loading) e.currentTarget.style.opacity = '0.9'; }}
+                  onMouseLeave={e => { if (!loading) e.currentTarget.style.opacity = '1'; }}
                 >
                   {loading ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg style={{ animation: 'spin 0.7s linear infinite', marginRight: 8, width: 16, height: 16, color: '#fff' }} fill="none" viewBox="0 0 24 24">
+                        <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                       </svg>
                       Resetting...
                     </>
                   ) : (
                     <>
-                      <Key className="w-5 h-5 mr-2" />
+                      <Key style={{ width: 18, height: 18, marginRight: 8 }} />
                       Reset Password
                     </>
                   )}
@@ -204,13 +368,17 @@ const ResetPassword = () => {
               </div>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            <div style={{ marginTop: 24, textAlign: 'center' }}>
+              <p style={{ fontSize: 14, color: textSec }}>
                 Remember your password?{' '}
-                <Link 
-                  to="/login" 
-                  className={`font-medium ${isDark ? 'text-purple-400 hover:text-purple-300' : 'text-blue-600 hover:text-blue-500'} transition-colors duration-200`}
-                >
+                <Link to="/login" style={{
+                  fontWeight: 700,
+                  color: '#7c3aed',
+                  textDecoration: 'none',
+                  transition: 'color 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = '#a78bfa'}
+                onMouseLeave={e => e.currentTarget.style.color = '#7c3aed'}>
                   Sign in
                 </Link>
               </p>
@@ -218,79 +386,81 @@ const ResetPassword = () => {
           </div>
 
           {/* Right Side - Platform Insights */}
-          <div className="w-full lg:w-1/2">
-            <div className="mb-8">
-              <h2 className={`text-3xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          <div style={{ width: '100%', maxWidth: 600 }}>
+            <div style={{ marginBottom: 32 }}>
+              <h2 style={{ fontSize: 32, fontWeight: 800, marginBottom: 16, color: textPri, letterSpacing: '-0.5px' }}>
                 Never Miss a Coding Contest Again
               </h2>
-              <p className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-6`}>
+              <p style={{ fontSize: 16, color: isDark ? '#d1d5db' : '#6b7280', marginBottom: 24, lineHeight: 1.6 }}>
                 CodeAlarm helps you track upcoming coding contests across all major platforms and sends you reminders so you never miss an opportunity to compete.
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg">
-                      <CalendarClock className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Upcoming</p>
-                      <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stats.upcoming}+</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg">
-                      <Trophy className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Past</p>
-                      <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stats.past}+</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-gradient-to-r from-purple-500 to-violet-500 rounded-lg">
-                      <Bell className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Reminders</p>
-                      <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{stats.reminders}+</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 32 }}>
+                {[
+                  { icon: CalendarClock, color: isDark ? '#4ade80' : '#16a34a', value: `${stats.upcoming}+`, label: 'Upcoming' },
+                  { icon: Trophy, color: isDark ? '#60a5fa' : '#3b82f6', value: `${stats.past}+`, label: 'Past' },
+                  { icon: Bell, color: isDark ? '#a78bfa' : '#7c3aed', value: `${stats.reminders}+`, label: 'Reminders' },
+                ].map(({ icon: Icon, color, value, label }) => (
+                  <div key={label} style={{
+                    padding: 18,
+                    borderRadius: 12,
+                    background: inputBg,
+                    border: `1.5px solid ${border}`,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{
+                        padding: 8,
+                        background: `linear-gradient(135deg, ${color} 0%, ${color} 100%)`,
+                        borderRadius: 10,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        <Icon style={{ width: 20, height: 20, color: '#fff' }} />
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 13, color: textSec, margin: 0 }}>{label}</p>
+                        <p style={{ fontSize: 22, fontWeight: 800, color: textPri, margin: 0 }}>{value}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
               
-              <div className={`p-6 rounded-xl ${isDark ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                <div className="flex items-start space-x-4">
-                  <div className="p-3 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
-                    <Sparkles className="h-6 w-6 text-white" />
+              <div style={{
+                padding: 24,
+                borderRadius: 16,
+                background: inputBg,
+                border: `1.5px solid ${border}`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                  <div style={{
+                    padding: 12,
+                    background: 'linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%)',
+                    borderRadius: 12,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    <Sparkles style={{ width: 24, height: 24, color: '#fff' }} />
                   </div>
                   <div>
-                    <h3 className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12, color: textPri }}>
                       Why Choose CodeAlarm?
                     </h3>
-                    <ul className={`space-y-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                      <li className="flex items-center space-x-2">
-                        <ArrowRight className="h-4 w-4 text-purple-500" />
-                        <span>All your coding contests in one place</span>
-                      </li>
-                      <li className="flex items-center space-x-2">
-                        <ArrowRight className="h-4 w-4 text-purple-500" />
-                        <span>Email alerts so you never miss a contest</span>
-                      </li>
-                      <li className="flex items-center space-x-2">
-                        <ArrowRight className="h-4 w-4 text-purple-500" />
-                        <span>Organize and filter your contest list</span>
-                      </li>
-                      <li className="flex items-center space-x-2">
-                        <ArrowRight className="h-4 w-4 text-purple-500" />
-                        <span>Modern, responsive interface for easy use</span>
-                      </li>
+                    <ul style={{ display: 'flex', flexDirection: 'column', gap: 8, listStyle: 'none', padding: 0, margin: 0 }}>
+                      {[
+                        'All your coding contests in one place',
+                        'Email alerts so you never miss a contest',
+                        'Organize and filter your contest list',
+                        'Modern, responsive interface for easy use',
+                      ].map(text => (
+                        <li key={text} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <ArrowRight style={{ width: 16, height: 16, color: '#7c3aed', flexShrink: 0 }} />
+                          <span style={{ fontSize: 14, color: isDark ? '#d1d5db' : '#6b7280' }}>{text}</span>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </div>
@@ -301,44 +471,51 @@ const ResetPassword = () => {
       </div>
 
       {/* Footer */}
-      <footer className={`w-full py-8 border-t ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-            <div className="flex items-center space-x-2">
-              <Link to="/" className="flex items-center space-x-2">
-                <img 
-                  src="/contest_tracker_homepage_logo.svg" 
-                  alt="CodeAlarm" 
-                  className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity" 
-                />
-                <span className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'} hover:opacity-80 transition-opacity`}>
-                  CodeAlarm
-                </span>
-              </Link>
-              <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                © 2025 CodeAlarm. All rights reserved.
-              </div>
+      <footer style={{
+        width: '100%',
+        padding: '32px 0',
+        borderTop: `1.5px solid ${border}`,
+        background: surface,
+      }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 28px' }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+          }}
+          className="md-flex-row">
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none', transition: 'opacity 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+              <AlarmClock style={{ width: 16, height: 16, color: isDark ? '#a78bfa' : '#7c3aed' }} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: textPri }}>CodeAlarm</span>
+            </Link>
+            <div style={{ fontSize: 12, color: textSec }}>
+              © 2025 CodeAlarm. All rights reserved.
             </div>
-            <div className="flex items-center space-x-2">
-              <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Made with
-              </span>
-              <Heart className="h-4 w-4 text-red-500 fill-current" />
-              <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                by
-              </span>
-              <a 
-                href="https://github.com/Prathamesh-2005" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 font-medium text-sm transition-colors duration-300"
-              >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: textSec }}>
+              Made with <Heart style={{ width: 12, height: 12, color: '#ef4444', fill: '#ef4444' }} /> by
+              <a href="https://github.com/Prathamesh-2005" target="_blank" rel="noopener noreferrer"
+                style={{ fontWeight: 600, color: '#7c3aed', textDecoration: 'none', transition: 'color 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#a78bfa'}
+                onMouseLeave={e => e.currentTarget.style.color = '#7c3aed'}>
                 Prathamesh Jadhav
               </a>
             </div>
           </div>
         </div>
       </footer>
+
+      <style>{`
+        @media (min-width: 1024px) {
+          .lg-flex-row { flex-direction: row !important; }
+        }
+        @media (min-width: 768px) {
+          .md-flex-row { flex-direction: row !important; }
+        }
+      `}</style>
     </div>
   );
 };

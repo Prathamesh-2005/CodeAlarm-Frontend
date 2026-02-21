@@ -4,7 +4,7 @@ const API_BASE_URL = 'https://code-alarm-2.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 40000, 
+  timeout: 60000, // 60 seconds for free tier backend wake-up time
   headers: {
     'Content-Type': 'application/json',
   },
@@ -35,13 +35,12 @@ api.interceptors.response.use(
   }
 );
 
-
 export const login = async (credentials) => {
-  return await api.post('/auth/login', credentials, { timeout: 40000 });
+  return await api.post('/auth/login', credentials, { timeout: 60000 });
 };
 
 export const register = async (userData) => {
-  return await api.post('/auth/register', userData, { timeout: 40000 });
+  return await api.post('/auth/register', userData, { timeout: 60000 });
 };
 
 export const getUserProfile = async () => {
@@ -99,11 +98,16 @@ export const forgotPassword = async (data) => {
       headers: {
         'Content-Type': 'application/json'
       },
-      timeout: 40000
+      timeout: 90000  // 90 seconds for email sending + server wake-up
     });
     return response.data;
   } catch (error) {
     console.error('Forgot password error details:', error.response?.data);
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      const timeoutError = new Error('Request timed out. The server may be waking up or email service is slow. Please try again in a minute.');
+      timeoutError.response = { data: { error: 'Request timed out. Please wait a moment and try again.' } };
+      throw timeoutError;
+    }
     throw error;
   }
 };

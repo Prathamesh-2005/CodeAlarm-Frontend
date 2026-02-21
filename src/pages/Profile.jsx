@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { updatePreferences, getUserProfile, getUserReminders, deleteReminder } from '../services/api';
-import { Trophy, Sparkles, User, Settings, Bell, Trash2, RefreshCw, ExternalLink, X, Check, AlertTriangle } from 'lucide-react';
+import { Trophy, Sparkles, User, Settings, Bell, Trash2, RefreshCw, ExternalLink, X, Check, AlertTriangle, Info } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 const Toast = ({ toast, onClose }) => {
@@ -9,17 +9,11 @@ const Toast = ({ toast, onClose }) => {
   const [isManualClose, setIsManualClose] = useState(false);
 
   useEffect(() => {
-    // Small delay to ensure proper mounting, then trigger animation
-    const mountTimer = setTimeout(() => {
-      setIsVisible(true);
-    }, 50);
+    const mountTimer = setTimeout(() => setIsVisible(true), 50);
     
     if (toast.type !== 'confirm' && !isManualClose) {
-      // Fixed: Reasonable duration for all message types
       const duration = toast.type === 'success' ? 5000 : (toast.duration || 4000);
-      const timer = setTimeout(() => {
-        handleClose();
-      }, duration);
+      const timer = setTimeout(() => handleClose(), duration);
       return () => {
         clearTimeout(timer);
         clearTimeout(mountTimer);
@@ -32,116 +26,113 @@ const Toast = ({ toast, onClose }) => {
   const handleClose = () => {
     setIsManualClose(true);
     setIsVisible(false);
-    setTimeout(() => {
-      onClose();
-    }, 1000); // Wait for exit animation
+    setTimeout(() => onClose(), 1000);
   };
-
-  // ... rest of the component remains the same ...
-
 
   const getToastStyles = () => {
     switch (toast.type) {
-      case 'success':
-        return 'bg-gradient-to-r from-emerald-600/90 to-green-600/90 border-emerald-500/50';
-      case 'error':
-        return 'bg-gradient-to-r from-red-600/90 to-rose-600/90 border-red-500/50';
-      case 'confirm':
-        return 'bg-gradient-to-r from-purple-600/90 to-violet-600/90 border-purple-500/50';
-      case 'info':
-        return 'bg-gradient-to-r from-slate-700/90 to-slate-800/90 border-slate-600/50';
-      default:
-        return 'bg-gradient-to-r from-slate-700/90 to-slate-800/90 border-slate-600/50';
+      case 'success': return { background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', borderColor: '#34d399' };
+      case 'error': return { background: 'linear-gradient(135deg, #dc2626 0%, #f87171 100%)', borderColor: '#fca5a5' };
+      case 'confirm': return { background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', borderColor: '#c4b5fd' };
+      case 'info': return { background: 'linear-gradient(135deg, #334155 0%, #475569 100%)', borderColor: '#64748b' };
+      default: return { background: 'linear-gradient(135deg, #334155 0%, #475569 100%)', borderColor: '#64748b' };
     }
   };
 
   const getIcon = () => {
+    const iconStyle = { width: 20, height: 20, color: '#fff' };
     switch (toast.type) {
-      case 'success':
-        return <Check className="w-5 h-5 text-white" />;
-      case 'error':
-        return <X className="w-5 h-5 text-white" />;
-      case 'confirm':
-        return <AlertTriangle className="w-5 h-5 text-white" />;
-      case 'info':
-        return <Info className="w-5 h-5 text-white" />;
-      default:
-        return <Info className="w-5 h-5 text-white" />;
+      case 'success': return <Check style={iconStyle} />;
+      case 'error': return <X style={iconStyle} />;
+      case 'confirm': return <AlertTriangle style={iconStyle} />;
+      case 'info': return <Info style={iconStyle} />;
+      default: return <Info style={iconStyle} />;
     }
   };
 
-  // Fixed: Progress bar duration matches toast duration
   const showProgressBar = toast.type !== 'confirm';
   const progressDuration = toast.type === 'success' ? 5000 : (toast.duration || 4000);
+  const toastStyle = getToastStyles();
 
   return (
-    <div className={`fixed top-6 right-6 z-50 transition-all duration-500 ease-out transform ${
-      isVisible ? 'translate-x-0 opacity-100 scale-100' : 'translate-x-full opacity-0 scale-95'
-    }`}>
-      <div className={`
-        min-w-80 max-w-md w-full 
-        backdrop-blur-md rounded-xl border-2 
-        shadow-2xl shadow-black/20
-        text-white
-        overflow-hidden
-        ${getToastStyles()}
-      `}>
-        {/* Progress bar */}
+    <div style={{
+      position: 'fixed', top: 24, right: 24, zIndex: 50,
+      transition: 'all 0.5s ease-out',
+      transform: isVisible ? 'translateX(0) scale(1)' : 'translateX(100%) scale(0.95)',
+      opacity: isVisible ? 1 : 0,
+    }}>
+      <div style={{
+        minWidth: 320, maxWidth: 448, width: '100%',
+        ...toastStyle,
+        backdropFilter: 'blur(12px)',
+        borderRadius: 12,
+        border: `2px solid ${toastStyle.borderColor}`,
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
+        color: '#fff',
+        overflow: 'hidden',
+        fontFamily: '"DM Sans", sans-serif',
+      }}>
         {showProgressBar && (
-          <div className="h-1 bg-white/20 relative">
-            <div 
-              className="h-full bg-white/60 absolute top-0 left-0"
-              style={{
-                animation: `shrink ${progressDuration}ms linear forwards`
-              }}
-            />
+          <div style={{ height: 4, background: 'rgba(255,255,255,0.2)', position: 'relative' }}>
+            <div style={{
+              height: '100%',
+              background: 'rgba(255,255,255,0.6)',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              animation: `shrink ${progressDuration}ms linear forwards`,
+            }} />
           </div>
         )}
         
-        <div className="p-4">
-          <div className="flex items-start gap-3">
-            {/* Icon */}
-            <div className="flex-shrink-0 mt-0.5">
-              {getIcon()}
-            </div>
+        <div style={{ padding: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <div style={{ flexShrink: 0, marginTop: 2 }}>{getIcon()}</div>
             
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium leading-relaxed text-white">
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: '#fff', margin: 0 }}>
                 {toast.message}
               </p>
               
-              {/* Confirm buttons */}
               {toast.type === 'confirm' && (
-                <div className="mt-4 flex gap-3">
+                <div style={{ marginTop: 16, display: 'flex', gap: 12 }}>
                   <button
-                    onClick={() => {
-                      toast.onConfirm?.();
-                      handleClose();
+                    onClick={() => { toast.onConfirm?.(); handleClose(); }}
+                    style={{
+                      background: 'rgba(255,255,255,0.2)',
+                      color: '#fff',
+                      padding: '8px 16px',
+                      borderRadius: 8,
+                      fontSize: 14,
+                      fontWeight: 600,
+                      fontFamily: 'inherit',
+                      transition: 'all 0.2s',
+                      backdropFilter: 'blur(4px)',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      cursor: 'pointer',
                     }}
-                    className="
-                      bg-white/20 hover:bg-white/30 
-                      text-white px-4 py-2 rounded-lg 
-                      text-sm font-medium 
-                      transition-all duration-200 
-                      backdrop-blur-sm
-                      border border-white/30
-                      hover:scale-105
-                    "
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.3)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'scale(1)'; }}
                   >
                     Yes, Delete
                   </button>
                   <button
                     onClick={handleClose}
-                    className="
-                      bg-white/10 hover:bg-white/20 
-                      text-white px-4 py-2 rounded-lg 
-                      text-sm font-medium 
-                      transition-all duration-200 
-                      backdrop-blur-sm
-                      border border-white/20
-                      hover:scale-105
-                    "
+                    style={{
+                      background: 'rgba(255,255,255,0.1)',
+                      color: '#fff',
+                      padding: '8px 16px',
+                      borderRadius: 8,
+                      fontSize: 14,
+                      fontWeight: 600,
+                      fontFamily: 'inherit',
+                      transition: 'all 0.2s',
+                      backdropFilter: 'blur(4px)',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
                   >
                     Cancel
                   </button>
@@ -149,33 +140,33 @@ const Toast = ({ toast, onClose }) => {
               )}
             </div>
             
-            {/* Close button */}
-            <div className="flex-shrink-0">
+            <div style={{ flexShrink: 0 }}>
               <button
-                className="
-                  inline-flex text-white/80 hover:text-white 
-                  focus:outline-none focus:ring-2 focus:ring-white/50 
-                  transition-all duration-200 rounded-full p-1
-                  hover:bg-white/20
-                "
                 onClick={handleClose}
+                style={{
+                  display: 'inline-flex',
+                  color: 'rgba(255,255,255,0.8)',
+                  transition: 'all 0.2s',
+                  borderRadius: '50%',
+                  padding: 4,
+                  border: 'none',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; e.currentTarget.style.background = 'transparent'; }}
               >
-                <X className="w-4 h-4" />
+                <X style={{ width: 16, height: 16 }} />
               </button>
             </div>
           </div>
         </div>
       </div>
       
-      {/* Custom CSS for progress bar animation */}
-      <style jsx>{`
+      <style>{`
         @keyframes shrink {
-          from {
-            width: 100%;
-          }
-          to {
-            width: 0%;
-          }
+          from { width: 100%; }
+          to { width: 0%; }
         }
       `}</style>
     </div>
@@ -197,14 +188,11 @@ const Profile = () => {
   const [remindersError, setRemindersError] = useState('');
   const [toast, setToast] = useState(null);
 
-  // Toast functions
   const showToast = (type, message, duration = 3000, onConfirm = null) => {
     setToast({ type, message, duration, onConfirm });
   };
 
-  const hideToast = () => {
-    setToast(null);
-  };
+  const hideToast = () => setToast(null);
 
   useEffect(() => {
     if (user) {
@@ -216,9 +204,7 @@ const Profile = () => {
   }, [user]);
 
   useEffect(() => {
-    if (activeTab === 'reminders') {
-      fetchReminders();
-    }
+    if (activeTab === 'reminders') fetchReminders();
   }, [activeTab]);
 
   const fetchReminders = async () => {
@@ -226,41 +212,21 @@ const Profile = () => {
     setRemindersError('');
     try {
       const response = await getUserReminders();
-      console.log('Complete API response:', response);
-      
       if (!response.data || !Array.isArray(response.data)) {
-        console.error('Invalid reminders data format:', response.data);
         setReminders([]);
         return;
       }
 
-      // Log each reminder's structure
-      response.data.forEach(reminder => {
-        console.log('Reminder:', {
-          id: reminder.id,
-          contestId: reminder.contest_id,
-          contest: reminder.contest,
-          name: reminder.contest?.name || reminder.contestName,
-          platform: reminder.contest?.platform
-        });
-      });
-
-      // Fixed duplicate filtering logic
       const uniqueReminders = response.data.filter(
         (reminder, index, self) =>
           index === self.findIndex(r => {
-            // Check for same reminder ID first
             if (r.id === reminder.id) return true;
-            
-            // Then check for same contest
             const rContestId = r.contest?.id || r.contest_id;
             const reminderContestId = reminder.contest?.id || reminder.contest_id;
-            
             return rContestId && reminderContestId && rContestId === reminderContestId;
           })
       );
 
-      console.log('Filtered reminders:', uniqueReminders);
       setReminders(uniqueReminders);
     } catch (error) {
       console.error('Error fetching reminders:', error);
@@ -281,9 +247,7 @@ const Profile = () => {
       setMessage({ type: 'success', text: 'Preferences updated successfully!' });
       showToast('success', 'Preferences updated successfully!');
       
-      setTimeout(() => {
-        setMessage({ type: '', text: '' });
-      }, 3000);
+      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     } catch (error) {
       console.error('Error updating preferences:', error);
       let errorMessage = 'Failed to update preferences. Please try again.';
@@ -303,27 +267,13 @@ const Profile = () => {
 
   const handleDeleteReminder = async (reminderId, contestName) => {
     showToast('confirm', `Are you sure you want to delete the reminder for "${contestName}"?`, 0, async () => {
-      hideToast();
-      
       try {
         await deleteReminder(reminderId);
-        setReminders(reminders.filter(r => r.id !== reminderId));
-        setMessage({ type: 'success', text: 'Reminder deleted successfully!' });
-        showToast('success', 'Reminder deleted successfully!');
-        
-        setTimeout(() => {
-          setMessage({ type: '', text: '' });
-        }, 3000);
+        showToast('success', 'Reminder deleted successfully');
+        fetchReminders();
       } catch (error) {
         console.error('Error deleting reminder:', error);
-        let errorMessage = 'Failed to delete reminder. Please try again.';
-        
-        if (error.response?.status === 403) {
-          errorMessage = 'Access denied. Cannot delete reminder.';
-        }
-        
-        setMessage({ type: 'error', text: errorMessage });
-        showToast('error', errorMessage);
+        showToast('error', 'Failed to delete reminder. Please try again.');
       }
     });
   };
@@ -332,27 +282,21 @@ const Profile = () => {
     if (!timestamp) return 'N/A';
     
     try {
-      // Handle both string timestamps and numbers
-      const date = new Date(typeof timestamp === 'string' 
-        ? timestamp.length > 10 ? timestamp : parseInt(timestamp) * 1000
-        : timestamp * 1000);
+      const date = typeof timestamp === 'number' 
+        ? new Date(timestamp)
+        : new Date(timestamp);
       
-      if (isNaN(date.getTime())) {
-        console.warn('Invalid timestamp:', timestamp);
-        return 'Invalid Date';
-      }
+      if (isNaN(date.getTime())) return 'Invalid Date';
       
-      // Format with timezone consideration
-      return date.toLocaleString('en-IN', {
+      return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit',
-        timeZoneName: 'short'
+        minute: '2-digit'
       });
     } catch (error) {
-      console.error('Date formatting error:', error);
+      console.error('Error formatting date:', error, timestamp);
       return 'Invalid Date';
     }
   };
@@ -372,39 +316,25 @@ const Profile = () => {
   };
 
   const getReminderStatus = (reminder) => {
-    // Handle both nested contest object and direct properties
     const contestStartDate = reminder.contest?.contestStartDate || reminder.contestStartDate;
     
-    if (!contestStartDate) {
-      return { status: 'no-date', color: 'gray' };
-    }
+    if (!contestStartDate) return { status: 'unknown', color: 'gray' };
     
     const now = new Date();
-    const startDate = new Date(
-      typeof contestStartDate === 'number' ? contestStartDate : contestStartDate
-    );
+    const startDate = new Date(typeof contestStartDate === 'number' ? contestStartDate : contestStartDate);
     
-    if (isNaN(startDate.getTime())) {
-      return { status: 'invalid-date', color: 'gray' };
-    }
+    if (isNaN(startDate.getTime())) return { status: 'unknown', color: 'gray' };
     
     const timeDiff = startDate.getTime() - now.getTime();
     
-    if (timeDiff < 0) {
-      return { status: 'past', color: 'red' };
-    } else if (timeDiff < 24 * 60 * 60 * 1000) { // Less than 1 day
-      return { status: 'upcoming', color: 'yellow' };
-    } else {
-      return { status: 'scheduled', color: 'green' };
-    }
+    if (timeDiff < 0) return { status: 'past', color: 'red' };
+    else if (timeDiff < 86400000) return { status: 'upcoming', color: 'yellow' };
+    else return { status: 'scheduled', color: 'green' };
   };
 
   const getContestName = (reminder) => {
-    // First check contest.contestName
-    if (reminder.contest?.contestName) {
-      return reminder.contest.contestName;
-    }
-    // Then check other possible locations
+    if (reminder.contest?.contestName) return reminder.contest.contestName;
+    
     const possibleNamePaths = [
       reminder.contest?.name,
       reminder.contestName,
@@ -413,10 +343,8 @@ const Profile = () => {
       reminder.title
     ];
 
-    // Return the first truthy value found
     const contestName = possibleNamePaths.find(name => name && name.trim() !== '');
     
-    // Fallback to contest ID if no name found
     if (!contestName) {
       return reminder.contest?.contestId 
         ? `Contest ${reminder.contest.contestId}`
@@ -430,63 +358,91 @@ const Profile = () => {
 
   const getPlatformColor = (platform) => {
     switch (platform?.toLowerCase()) {
-      case 'codeforces': return 'from-blue-500 to-blue-600';
-      case 'codechef': return 'from-orange-500 to-orange-600';
-      case 'leetcode': return 'from-yellow-500 to-yellow-600';
-      default: return 'from-purple-500 to-purple-600';
+      case 'codeforces': return { bg: isDark ? 'rgba(59, 130, 246, 0.2)' : '#dbeafe', text: isDark ? '#60a5fa' : '#1e40af' };
+      case 'codechef': return { bg: isDark ? 'rgba(249, 115, 22, 0.2)' : '#fed7aa', text: isDark ? '#fb923c' : '#c2410c' };
+      case 'leetcode': return { bg: isDark ? 'rgba(234, 179, 8, 0.2)' : '#fef3c7', text: isDark ? '#facc15' : '#a16207' };
+      default: return { bg: isDark ? 'rgba(168, 85, 247, 0.2)' : '#e9d5ff', text: isDark ? '#c084fc' : '#7c3aed' };
     }
   };
 
+  // ── Design tokens ────────────────────────────────────────────────
+  const bg = isDark ? '#0a0a0a' : '#f5f5f5';
+  const surface = isDark ? '#111111' : '#ffffff';
+  const border = isDark ? '#1e1e1e' : '#e5e7eb';
+  const hoverBorder = isDark ? '#2e2e2e' : '#d1d5db';
+  const textPri = isDark ? '#f0f0f0' : '#111111';
+  const textSec = isDark ? '#666666' : '#9ca3af';
+  const inputBg = isDark ? '#161616' : '#f9fafb';
+  const activeBg = isDark ? '#1e1e1e' : '#f0f0f0';
+
   if (!user) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${
-        isDark ? 'bg-gray-950' : 'bg-gray-50'
-      }`}>
-        <div className={`text-center p-8 rounded-lg border ${
-          isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'
-        }`}>
-          <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
-            isDark ? 'bg-gray-800' : 'bg-gray-100'
-          }`}>
-            <User className={`w-8 h-8 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: bg, fontFamily: '"DM Sans", sans-serif' }}>
+        <div style={{
+          textAlign: 'center',
+          padding: 32,
+          borderRadius: 16,
+          border: `1.5px solid ${border}`,
+          background: surface,
+        }}>
+          <div style={{
+            width: 64,
+            height: 64,
+            margin: '0 auto 16px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: inputBg,
+          }}>
+            <User style={{ width: 32, height: 32, color: textSec }} />
           </div>
-          <h2 className={`text-lg font-semibold mb-2 ${
-            isDark ? 'text-white' : 'text-gray-900'
-          }`}>Authentication Required</h2>
-          <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Please log in to view your profile</p>
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8, color: textPri }}>
+            Authentication Required
+          </h2>
+          <p style={{ color: textSec, margin: 0 }}>Please log in to view your profile</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={isDark ? 'min-h-screen bg-gray-950' : 'min-h-screen bg-gray-50'}>
-      {/* Toast Component */}
+    <div style={{ minHeight: '100vh', background: bg, fontFamily: '"DM Sans", sans-serif' }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+        * { box-sizing: border-box; }
+      `}</style>
+
       {toast && <Toast toast={toast} onClose={hideToast} />}
 
       {/* Header */}
-      <div className={`w-full px-6 py-8 border-b ${
-        isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'
-      }`}>
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <h1 className={`text-2xl font-semibold mb-1 ${
-                isDark ? 'text-white' : 'text-gray-900'
-              }`}>
+      <div style={{
+        width: '100%',
+        padding: '32px 24px',
+        borderBottom: `1.5px solid ${border}`,
+        background: surface,
+      }}>
+        <div style={{ maxWidth: 1160, margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ flex: 1 }}>
+              <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8, color: textPri, letterSpacing: '-0.4px' }}>
                 Profile
               </h1>
-              <p className={`text-sm ${
-                isDark ? 'text-gray-400' : 'text-gray-600'
-              }`}>
+              <p style={{ fontSize: 14, color: textSec, margin: 0 }}>
                 Manage your account settings and preferences
               </p>
             </div>
-            <div className="hidden lg:block">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                isDark ? 'bg-gray-800' : 'bg-gray-100'
-              }`}>
-                <User className={`h-6 w-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
+            <div style={{ display: 'none' }}>
+              <div style={{
+                width: 48,
+                height: 48,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: inputBg,
+              }}>
+                <User style={{ width: 24, height: 24, color: textSec }} />
               </div>
             </div>
           </div>
@@ -494,46 +450,52 @@ const Profile = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 py-6">
-        <div className={`rounded-lg border ${
-          isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'
-        }`}>
+      <div style={{ maxWidth: 1160, margin: '0 auto', padding: '44px 28px' }}>
+        <div style={{
+          borderRadius: 16,
+          border: `1.5px solid ${border}`,
+          background: surface,
+        }}>
           
           {/* Message */}
           {message.text && (
-            <div className={`mx-6 mt-6 p-3 rounded-md border text-sm ${
-              message.type === 'success' 
-                ? isDark 
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                : isDark
-                  ? 'bg-red-500/10 text-red-400 border-red-500/20'
-                  : 'bg-red-50 text-red-700 border-red-200'
-            }`}>
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
+            <div style={{
+              margin: '24px 24px 0',
+              padding: 12,
+              borderRadius: 10,
+              border: `1.5px solid ${message.type === 'success' 
+                ? (isDark ? '#065f46' : '#bbf7d0')
+                : (isDark ? '#7f1d1d' : '#fecaca')}`,
+              background: message.type === 'success'
+                ? (isDark ? 'rgba(5, 150, 105, 0.1)' : '#f0fdf4')
+                : (isDark ? 'rgba(220, 38, 38, 0.1)' : '#fef2f2'),
+              color: message.type === 'success'
+                ? (isDark ? '#4ade80' : '#16a34a')
+                : (isDark ? '#f87171' : '#dc2626'),
+              fontSize: 14,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ flexShrink: 0 }}>
                   {message.type === 'success' ? (
-                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                    <svg style={{ height: 16, width: 16 }} fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                   ) : (
-                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                    <svg style={{ height: 16, width: 16 }} fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
                   )}
                 </div>
-                <div className="ml-3">
-                  <p className="font-medium">{message.text}</p>
+                <div style={{ marginLeft: 12 }}>
+                  <p style={{ fontWeight: 600, margin: 0 }}>{message.text}</p>
                 </div>
               </div>
             </div>
           )}
 
           {/* Tabs */}
-          <div className={`border-b ${
-            isDark ? 'border-gray-800' : 'border-gray-200'
-          }`}>
-            <nav className="-mb-px flex space-x-0 px-6">
+          <div style={{ borderBottom: `1.5px solid ${border}` }}>
+            <nav style={{ display: 'flex', gap: 0, padding: '0 24px', marginBottom: -2 }}>
               {[
                 { key: 'profile', label: 'Profile', icon: User },
                 { key: 'preferences', label: 'Preferences', icon: Settings },
@@ -542,17 +504,25 @@ const Profile = () => {
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`py-3 px-4 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors ${
-                    activeTab === tab.key
-                      ? isDark
-                        ? 'border-gray-200 text-white'
-                        : 'border-gray-900 text-gray-900'
-                      : isDark
-                        ? 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-700'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                  style={{
+                    padding: '14px 18px',
+                    fontWeight: 600,
+                    fontSize: 14,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    transition: 'all 0.15s',
+                    color: activeTab === tab.key ? textPri : textSec,
+                    background: 'transparent',
+                    border: 'none',
+                    borderBottom: activeTab === tab.key ? `2px solid ${textPri}` : '2px solid transparent',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                  }}
+                  onMouseEnter={e => { if (activeTab !== tab.key) e.currentTarget.style.color = textPri; }}
+                  onMouseLeave={e => { if (activeTab !== tab.key) e.currentTarget.style.color = textSec; }}
                 >
-                  <tab.icon className="w-4 h-4" />
+                  <tab.icon style={{ width: 16, height: 16 }} />
                   <span>{tab.label}</span>
                 </button>
               ))}
@@ -560,40 +530,48 @@ const Profile = () => {
           </div>
 
           {/* Content */}
-          <div className="px-6 py-8">
+          <div style={{ padding: '32px 28px' }}>
             {activeTab === 'profile' && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
                   {[
                     { label: 'Username', value: user.username, icon: User },
-                    { label: 'Email', value: user.email, icon: 'M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
+                    { label: 'Email', value: user.email, iconPath: 'M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
                     { label: 'First Name', value: user.firstName, icon: User },
                     { label: 'Last Name', value: user.lastName, icon: User },
-                    { label: 'Member Since', value: formatDate(user.createdAt), icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-                    { label: 'Last Login', value: formatDate(user.lastLogin), icon: 'M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1' }
+                    { label: 'Member Since', value: formatDate(user.createdAt), iconPath: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+                    { label: 'Last Login', value: formatDate(user.lastLogin), iconPath: 'M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1' }
                   ].map((field, index) => (
-                    <div key={index} className={`rounded-lg p-4 border ${
-                      isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'
-                    }`}>
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                          isDark ? 'bg-gray-700' : 'bg-white'
-                        }`}>
-                          {typeof field.icon === 'string' ? (
-                            <svg className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={field.icon} />
+                    <div key={index} style={{
+                      borderRadius: 12,
+                      padding: 18,
+                      border: `1.5px solid ${border}`,
+                      background: inputBg,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 10,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: surface,
+                          border: `1.5px solid ${border}`,
+                        }}>
+                          {field.iconPath ? (
+                            <svg style={{ width: 20, height: 20, color: textSec }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={field.iconPath} />
                             </svg>
                           ) : (
-                            <field.icon className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
+                            <field.icon style={{ width: 20, height: 20, color: textSec }} />
                           )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <label className={`block text-xs font-medium mb-1 ${
-                            isDark ? 'text-gray-400' : 'text-gray-600'
-                          }`}>{field.label}</label>
-                          <div className={`text-sm font-medium truncate ${
-                            isDark ? 'text-white' : 'text-gray-900'
-                          }`}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4, color: textSec }}>
+                            {field.label}
+                          </label>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: textPri, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {field.value || 'N/A'}
                           </div>
                         </div>
@@ -605,30 +583,47 @@ const Profile = () => {
             )}
 
             {activeTab === 'preferences' && (
-              <form onSubmit={handlePreferencesUpdate} className="space-y-6">
-                <div className={`rounded-lg p-6 border ${
-                  isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'
-                }`}>
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      isDark ? 'bg-gray-700' : 'bg-white'
-                    }`}>
-                      <svg className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <form onSubmit={handlePreferencesUpdate} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <div style={{
+                  borderRadius: 16,
+                  padding: 24,
+                  border: `1.5px solid ${border}`,
+                  background: inputBg,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                    <div style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 10,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: surface,
+                      border: `1.5px solid ${border}`,
+                    }}>
+                      <svg style={{ width: 20, height: 20, color: textSec }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    <h3 className={`text-base font-semibold ${
-                      isDark ? 'text-white' : 'text-gray-900'
-                    }`}>Default Reminder Time</h3>
+                    <h3 style={{ fontSize: 16, fontWeight: 700, color: textPri, margin: 0 }}>
+                      Default Reminder Time
+                    </h3>
                   </div>
                   <select
                     value={preferences.defaultReminderTime}
                     onChange={(e) => setPreferences({...preferences, defaultReminderTime: e.target.value})}
-                    className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 ${
-                      isDark 
-                        ? 'bg-gray-900 border-gray-700 text-white' 
-                        : 'bg-white border-gray-300 text-gray-900'
-                    }`}
+                    style={{
+                      width: '100%',
+                      padding: '12px 14px',
+                      border: `1.5px solid ${border}`,
+                      borderRadius: 10,
+                      fontSize: 14,
+                      fontFamily: 'inherit',
+                      fontWeight: 500,
+                      background: surface,
+                      color: textPri,
+                      outline: 'none',
+                    }}
                   >
                     <option value="BEFORE_1_MINUTE">1 minute before</option>
                     <option value="BEFORE_5_MINUTES">5 minutes before</option>
@@ -641,64 +636,101 @@ const Profile = () => {
                   </select>
                 </div>
 
-                <div className={`rounded-lg p-6 border ${
-                  isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        isDark ? 'bg-gray-700' : 'bg-white'
-                      }`}>
-                        <svg className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div style={{
+                  borderRadius: 16,
+                  padding: 24,
+                  border: `1.5px solid ${border}`,
+                  background: inputBg,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 10,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: surface,
+                        border: `1.5px solid ${border}`,
+                      }}>
+                        <svg style={{ width: 20, height: 20, color: textSec }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
                       </div>
                       <div>
-                        <h3 className={`text-base font-semibold ${
-                          isDark ? 'text-white' : 'text-gray-900'
-                        }`}>Email Notifications</h3>
-                        <p className={`text-sm mt-0.5 ${
-                          isDark ? 'text-gray-400' : 'text-gray-600'
-                        }`}>Receive email notifications for your reminders</p>
+                        <h3 style={{ fontSize: 16, fontWeight: 700, color: textPri, margin: '0 0 4px' }}>
+                          Email Notifications
+                        </h3>
+                        <p style={{ fontSize: 13, color: textSec, margin: 0 }}>
+                          Receive email notifications for your reminders
+                        </p>
                       </div>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
+                    <label style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
                       <input
                         type="checkbox"
                         checked={preferences.emailNotificationsEnabled}
                         onChange={(e) => setPreferences({...preferences, emailNotificationsEnabled: e.target.checked})}
-                        className="sr-only peer"
+                        style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
                       />
-                      <div className={`w-11 h-6 rounded-full peer peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gray-500 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${
-                        isDark
-                          ? 'bg-gray-600 peer-checked:bg-gray-700'
-                          : 'bg-gray-200 peer-checked:bg-gray-900'
-                      }`}></div>
+                      <div style={{
+                        width: 44,
+                        height: 24,
+                        borderRadius: 12,
+                        background: preferences.emailNotificationsEnabled ? textPri : (isDark ? '#374151' : '#d1d5db'),
+                        position: 'relative',
+                        transition: 'background 0.15s',
+                      }}>
+                        <div style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: '50%',
+                          background: '#fff',
+                          border: '1px solid rgba(0,0,0,0.1)',
+                          position: 'absolute',
+                          top: 2,
+                          left: preferences.emailNotificationsEnabled ? 22 : 2,
+                          transition: 'left 0.15s',
+                        }} />
+                      </div>
                     </label>
                   </div>
                 </div>
 
-                <div className="flex justify-end">
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <button
                     type="submit"
                     disabled={loading}
-                    className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
-                      isDark
-                        ? 'bg-white text-gray-900 hover:bg-gray-100'
-                        : 'bg-gray-900 text-white hover:bg-gray-800'
-                    }`}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      padding: '10px 18px',
+                      fontSize: 14,
+                      fontWeight: 700,
+                      fontFamily: 'inherit',
+                      borderRadius: 10,
+                      border: 'none',
+                      background: textPri,
+                      color: isDark ? '#111' : '#fff',
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      opacity: loading ? 0.5 : 1,
+                      transition: 'opacity 0.15s',
+                    }}
+                    onMouseEnter={e => { if (!loading) e.currentTarget.style.opacity = '0.85'; }}
+                    onMouseLeave={e => { if (!loading) e.currentTarget.style.opacity = '1'; }}
                   >
                     {loading ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8-8h8a8 8 0 018 8v.01M12 12l4 4m0 0l-4 4m4-4H8"></path>
-                           </svg>
+                        <svg style={{ animation: 'spin 0.7s linear infinite', marginRight: 8, height: 16, width: 16 }} fill="none" viewBox="0 0 24 24">
+                          <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
                         Updating...
                       </>
                     ) : (
                       <>
-                        <Settings className="w-4 h-4 mr-2" />
+                        <Settings style={{ width: 16, height: 16, marginRight: 8 }} />
                         Update Preferences
                       </>
                     )}
@@ -708,50 +740,82 @@ const Profile = () => {
             )}
 
             {activeTab === 'reminders' && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className={`text-base font-semibold flex items-center ${
-                    isDark ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    <Bell className={`w-5 h-5 mr-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                  <h3 style={{
+                    fontSize: 19,
+                    fontWeight: 700,
+                    color: textPri,
+                    margin: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}>
+                    <Bell style={{ width: 20, height: 20, color: textSec }} />
                     Your Reminders
                   </h3>
                   <button
                     onClick={fetchReminders}
                     disabled={remindersLoading}
-                    className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
-                      isDark
-                        ? 'bg-gray-800 text-white border border-gray-700 hover:bg-gray-700'
-                        : 'bg-white text-gray-900 border border-gray-300 hover:bg-gray-50'
-                    }`}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      padding: '9px 16px',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      fontFamily: 'inherit',
+                      borderRadius: 10,
+                      border: `1.5px solid ${border}`,
+                      background: 'transparent',
+                      color: textSec,
+                      cursor: remindersLoading ? 'not-allowed' : 'pointer',
+                      opacity: remindersLoading ? 0.5 : 1,
+                      transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={e => { if (!remindersLoading) { e.currentTarget.style.background = inputBg; e.currentTarget.style.color = textPri; }}}
+                    onMouseLeave={e => { if (!remindersLoading) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = textSec; }}}
                   >
-                    <RefreshCw className={`w-4 h-4 mr-2 ${remindersLoading ? 'animate-spin' : ''}`} />
+                    <RefreshCw style={{ width: 16, height: 16, marginRight: 8, animation: remindersLoading ? 'spin 0.7s linear infinite' : 'none' }} />
                     Refresh
                   </button>
                 </div>
 
                 {remindersLoading && (
-                  <div className={`rounded-lg p-8 border ${
-                    isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'
-                  }`}>
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-200 border-t-gray-900"></div>
-                      <span className={`ml-3 font-medium text-sm ${
-                        isDark ? 'text-white' : 'text-gray-900'
-                      }`}>Loading reminders...</span>
+                  <div style={{
+                    borderRadius: 16,
+                    padding: 32,
+                    border: `1.5px solid ${border}`,
+                    background: inputBg,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{
+                        animation: 'spin 0.7s linear infinite',
+                        borderRadius: '50%',
+                        height: 24,
+                        width: 24,
+                        border: `2px solid ${border}`,
+                        borderTopColor: textSec,
+                      }} />
+                      <span style={{ marginLeft: 12, fontWeight: 600, fontSize: 14, color: textPri }}>
+                        Loading reminders...
+                      </span>
                     </div>
                   </div>
                 )}
 
                 {remindersError && (
-                  <div className={`rounded-lg p-4 border ${
-                    isDark ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50 border-red-200 text-red-700'
-                  }`}>
-                    <div className="flex items-center">
-                      <svg className="h-5 w-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                  <div style={{
+                    borderRadius: 16,
+                    padding: 16,
+                    border: `1.5px solid ${isDark ? '#7f1d1d' : '#fecaca'}`,
+                    background: isDark ? 'rgba(220, 38, 38, 0.1)' : '#fef2f2',
+                    color: isDark ? '#f87171' : '#dc2626',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <svg style={{ height: 20, width: 20, marginRight: 12 }} fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                       </svg>
-                      <span className="font-medium text-sm">{remindersError}</span>
+                      <span style={{ fontWeight: 600, fontSize: 14 }}>{remindersError}</span>
                     </div>
                   </div>
                 )}
@@ -759,108 +823,148 @@ const Profile = () => {
                 {!remindersLoading && !remindersError && (
                   <>
                     {reminders.length === 0 ? (
-                      <div className={`rounded-lg p-8 border text-center ${
-                        isDark ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-200'
-                      }`}>
-                        <div className={`w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center ${
-                          isDark ? 'bg-gray-700' : 'bg-gray-200'
-                        }`}>
-                          <Bell className={`w-6 h-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
+                      <div style={{
+                        borderRadius: 16,
+                        padding: 48,
+                        border: `1.5px solid ${border}`,
+                        background: inputBg,
+                        textAlign: 'center',
+                      }}>
+                        <div style={{
+                          width: 48,
+                          height: 48,
+                          margin: '0 auto 16px',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: surface,
+                          border: `1.5px solid ${border}`,
+                        }}>
+                          <Bell style={{ width: 24, height: 24, color: textSec }} />
                         </div>
-                        <h3 className={`text-base font-semibold mb-2 ${
-                          isDark ? 'text-white' : 'text-gray-900'
-                        }`}>No Reminders Yet</h3>
-                        <p className={`text-sm mb-4 ${
-                          isDark ? 'text-gray-400' : 'text-gray-600'
-                        }`}>You haven't set up any contest reminders yet.</p>
-                        <a 
-                          href="/upcoming" 
-                          className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                            isDark
-                              ? 'bg-white text-gray-900 hover:bg-gray-100'
-                              : 'bg-gray-900 text-white hover:bg-gray-800'
-                          }`}
+                        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8, color: textPri }}>
+                          No Reminders Yet
+                        </h3>
+                        <p style={{ fontSize: 14, marginBottom: 16, color: textSec }}>
+                          You haven't set up any contest reminders yet.
+                        </p>
+                        <a
+                          href="/upcoming"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            padding: '10px 16px',
+                            fontSize: 14,
+                            fontWeight: 700,
+                            fontFamily: 'inherit',
+                            borderRadius: 10,
+                            background: textPri,
+                            color: isDark ? '#111' : '#fff',
+                            textDecoration: 'none',
+                            transition: 'opacity 0.15s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+                          onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                         >
-                          <ExternalLink className="w-4 h-4 mr-2" />
+                          <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
                           Browse Contests
                         </a>
                       </div>
                     ) : (
-                      <div className="grid gap-4">
+                      <div style={{ display: 'grid', gap: 16 }}>
                         {reminders.map((reminder) => {
                           const status = getReminderStatus(reminder);
                           const contestName = getContestName(reminder);
                           const platform = reminder.contest?.platform || 'Unknown';
+                          const platformColor = getPlatformColor(platform);
+                          
+                          const statusColors = {
+                            green: { bg: isDark ? 'rgba(34, 197, 94, 0.2)' : '#dcfce7', text: isDark ? '#4ade80' : '#16a34a', emoji: '📅' },
+                            yellow: { bg: isDark ? 'rgba(234, 179, 8, 0.2)' : '#fef3c7', text: isDark ? '#facc15' : '#a16207', emoji: '⏰' },
+                            red: { bg: isDark ? 'rgba(239, 68, 68, 0.2)' : '#fee2e2', text: isDark ? '#f87171' : '#dc2626', emoji: '✅' },
+                            gray: { bg: isDark ? 'rgba(107, 114, 128, 0.2)' : '#f3f4f6', text: textSec, emoji: '❓' },
+                          };
+                          const statusColor = statusColors[status.color] || statusColors.gray;
                           
                           return (
-                            <div 
+                            <div
                               key={reminder.id}
-                              className={`rounded-lg p-6 border transition-colors ${
-                                isDark ? 'bg-gray-800/50 border-gray-700 hover:bg-gray-800' : 'bg-gray-50 border-gray-200 hover:bg-white'
-                              }`}
+                              style={{
+                                borderRadius: 16,
+                                padding: 24,
+                                border: `1.5px solid ${border}`,
+                                background: inputBg,
+                                transition: 'border-color 0.15s',
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.borderColor = hoverBorder}
+                              onMouseLeave={e => e.currentTarget.style.borderColor = border}
                             >
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1 min-w-0">
-                                  {/* Contest Name and Platform */}
-                                  <div className="flex items-center space-x-2 mb-3">
-                                    <div className={`px-2 py-1 rounded text-xs font-medium ${
-                                      platform === 'codeforces' 
-                                        ? isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-700'
-                                        : platform === 'codechef'
-                                          ? isDark ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700'
-                                          : isDark ? 'bg-yellow-500/20 text-yellow-400' : 'bg-yellow-100 text-yellow-700'
-                                    }`}>
+                              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  {/* Badges */}
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+                                    <div style={{
+                                      padding: '4px 10px',
+                                      borderRadius: 7,
+                                      fontSize: 12,
+                                      fontWeight: 700,
+                                      background: platformColor.bg,
+                                      color: platformColor.text,
+                                    }}>
                                       {platform}
                                     </div>
-                                    <div className={`px-2 py-1 rounded text-xs font-medium ${
-                                      status.color === 'green' 
-                                        ? isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-700'
-                                        : status.color === 'yellow' 
-                                          ? isDark ? 'bg-yellow-500/20 text-yellow-400' : 'bg-yellow-100 text-yellow-700'
-                                          : status.color === 'red' 
-                                            ? isDark ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-700'
-                                            : isDark ? 'bg-gray-500/20 text-gray-400' : 'bg-gray-100 text-gray-700'
-                                    }`}>
-                                      {status.status === 'upcoming' ? '⏰ Soon' :
-                                       status.status === 'past' ? '✅ Past' :
-                                       status.status === 'scheduled' ? '📅 Scheduled' : '❓ Unknown'}
+                                    <div style={{
+                                      padding: '4px 10px',
+                                      borderRadius: 7,
+                                      fontSize: 12,
+                                      fontWeight: 700,
+                                      background: statusColor.bg,
+                                      color: statusColor.text,
+                                    }}>
+                                      {statusColor.emoji} {status.status === 'upcoming' ? 'Soon' :
+                                       status.status === 'past' ? 'Past' :
+                                       status.status === 'scheduled' ? 'Scheduled' : 'Unknown'}
                                     </div>
                                   </div>
                                   
-                                  <h4 className={`text-base font-semibold mb-3 truncate ${
-                                    isDark ? 'text-white' : 'text-gray-900'
-                                  }`}>
+                                  <h4 style={{
+                                    fontSize: 16,
+                                    fontWeight: 700,
+                                    marginBottom: 16,
+                                    color: textPri,
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  }}>
                                     {contestName}
                                   </h4>
                                   
-                                  {/* Contest Details */}
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                    <div className="space-y-1">
-                                      <div className={`flex items-center ${
-                                        isDark ? 'text-gray-400' : 'text-gray-600'
-                                      }`}>
-                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  {/* Details Grid */}
+                                  <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                                    gap: 16,
+                                    fontSize: 14,
+                                  }}>
+                                    <div>
+                                      <div style={{ display: 'flex', alignItems: 'center', color: textSec, marginBottom: 4 }}>
+                                        <svg style={{ width: 16, height: 16, marginRight: 8 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
-                                        <span className="font-medium">Start Time:</span>
+                                        <span style={{ fontWeight: 600 }}>Start Time:</span>
                                       </div>
-                                      <div className={`font-medium ml-6 ${
-                                        isDark ? 'text-white' : 'text-gray-900'
-                                      }`}>
+                                      <div style={{ fontWeight: 600, marginLeft: 24, color: textPri }}>
                                         {formatDate(reminder.contest?.contestStartDate || reminder.contestStartDate)}
                                       </div>
                                     </div>
                                     
-                                    <div className="space-y-1">
-                                      <div className={`flex items-center ${
-                                        isDark ? 'text-gray-400' : 'text-gray-600'
-                                      }`}>
-                                        <Bell className="w-4 h-4 mr-2" />
-                                        <span className="font-medium">Reminder:</span>
+                                    <div>
+                                      <div style={{ display: 'flex', alignItems: 'center', color: textSec, marginBottom: 4 }}>
+                                        <Bell style={{ width: 16, height: 16, marginRight: 8 }} />
+                                        <span style={{ fontWeight: 600 }}>Reminder:</span>
                                       </div>
-                                      <div className={`font-medium ml-6 ${
-                                        isDark ? 'text-white' : 'text-gray-900'
-                                      }`}>
+                                      <div style={{ fontWeight: 600, marginLeft: 24, color: textPri }}>
                                         {formatReminderTime(reminder.reminderTime)}
                                       </div>
                                     </div>
@@ -868,16 +972,24 @@ const Profile = () => {
                                   
                                   {/* Contest URL */}
                                   {(reminder.contest?.contestUrl || reminder.contestUrl) && (
-                                    <div className="mt-4">
+                                    <div style={{ marginTop: 16 }}>
                                       <a
                                         href={reminder.contest?.contestUrl || reminder.contestUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className={`inline-flex items-center text-sm transition-colors ${
-                                          isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
-                                        }`}
+                                        style={{
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          fontSize: 13,
+                                          fontWeight: 600,
+                                          color: textSec,
+                                          textDecoration: 'none',
+                                          transition: 'color 0.15s',
+                                        }}
+                                        onMouseEnter={e => e.currentTarget.style.color = textPri}
+                                        onMouseLeave={e => e.currentTarget.style.color = textSec}
                                       >
-                                        <ExternalLink className="w-4 h-4 mr-1" />
+                                        <ExternalLink style={{ width: 16, height: 16, marginRight: 6 }} />
                                         View Contest
                                       </a>
                                     </div>
@@ -885,17 +997,29 @@ const Profile = () => {
                                 </div>
                                 
                                 {/* Delete Button */}
-                                <div className="flex-shrink-0 ml-4">
+                                <div style={{ flexShrink: 0, marginLeft: 16 }}>
                                   <button
                                     onClick={() => handleDeleteReminder(reminder.id, contestName)}
-                                    className={`p-2 rounded-md transition-colors ${
-                                      isDark 
-                                        ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10' 
-                                        : 'text-red-600 hover:text-red-700 hover:bg-red-50'
-                                    }`}
                                     title="Delete Reminder"
+                                    style={{
+                                      padding: 8,
+                                      borderRadius: 10,
+                                      border: 'none',
+                                      background: 'transparent',
+                                      color: isDark ? '#f87171' : '#dc2626',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.15s',
+                                    }}
+                                    onMouseEnter={e => {
+                                      e.currentTarget.style.background = isDark ? 'rgba(220, 38, 38, 0.1)' : '#fef2f2';
+                                      e.currentTarget.style.color = isDark ? '#fca5a5' : '#b91c1c';
+                                    }}
+                                    onMouseLeave={e => {
+                                      e.currentTarget.style.background = 'transparent';
+                                      e.currentTarget.style.color = isDark ? '#f87171' : '#dc2626';
+                                    }}
                                   >
-                                    <Trash2 className="w-5 h-5" />
+                                    <Trash2 style={{ width: 20, height: 20 }} />
                                   </button>
                                 </div>
                               </div>
@@ -911,6 +1035,12 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

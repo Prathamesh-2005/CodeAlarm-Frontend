@@ -9,6 +9,7 @@ const Login = () => {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSlowWarning, setShowSlowWarning] = useState(false);
   const [stats] = useState({ upcoming: 125, past: 342, reminders: 568 });
   const [showPassword, setShowPassword] = useState(false);
 
@@ -20,6 +21,19 @@ const Login = () => {
   useEffect(() => {
     if (isAuthenticated) navigate('/');
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    let timer;
+    if (loading) {
+      // Show warning after 3 seconds of loading
+      timer = setTimeout(() => {
+        setShowSlowWarning(true);
+      }, 3000);
+    } else {
+      setShowSlowWarning(false);
+    }
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   const from = location.state?.from?.pathname || '/';
 
@@ -44,13 +58,14 @@ const Login = () => {
     }
   };
 
-  const inputBase = `w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${
-    isDark
-      ? 'bg-gray-800/60 border-gray-700 text-white placeholder-gray-500'
-      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-  }`;
-
-  const labelBase = `block text-xs font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`;
+  // Design tokens
+  const bg = isDark ? '#0a0a0a' : '#f5f5f5';
+  const surface = isDark ? '#111111' : '#ffffff';
+  const border = isDark ? '#1e1e1e' : '#e5e7eb';
+  const hoverBorder = isDark ? '#2e2e2e' : '#d1d5db';
+  const textPri = isDark ? '#f0f0f0' : '#111111';
+  const textSec = isDark ? '#666666' : '#9ca3af';
+  const inputBg = isDark ? '#161616' : '#f9fafb';
 
   const features = [
     { text: 'Track contests from Codeforces, CodeChef & LeetCode in one place' },
@@ -60,27 +75,54 @@ const Login = () => {
   ];
 
   return (
-    <div className={`min-h-screen flex flex-col ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: bg, fontFamily: '"DM Sans", sans-serif' }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+        @keyframes spin { to { transform: rotate(360deg); } }
+        * { box-sizing: border-box; }
+      `}</style>
+
       {/* Header */}
-      <header className={`border-b ${isDark ? 'bg-gray-900/80 border-gray-800' : 'bg-white border-gray-200'}`}>
-        <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <AlarmClock className={`h-5 w-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
-            <span className={`text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>CodeAlarm</span>
+      <header style={{
+        borderBottom: `1.5px solid ${border}`,
+        background: surface,
+      }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '14px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', transition: 'opacity 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+            <AlarmClock style={{ width: 20, height: 20, color: isDark ? '#a78bfa' : '#7c3aed' }} />
+            <span style={{ fontSize: 16, fontWeight: 800, color: textPri, letterSpacing: '-0.3px' }}>CodeAlarm</span>
           </Link>
-          <div className="flex items-center gap-3">
-            <Link
-              to="/register"
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                isDark ? 'text-gray-300 hover:text-white hover:bg-gray-800' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Link to="/register" style={{
+              padding: '9px 16px',
+              fontSize: 14,
+              fontWeight: 600,
+              borderRadius: 10,
+              color: textSec,
+              textDecoration: 'none',
+              transition: 'all 0.15s',
+              fontFamily: 'inherit',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = textPri; e.currentTarget.style.background = inputBg; }}
+            onMouseLeave={e => { e.currentTarget.style.color = textSec; e.currentTarget.style.background = 'transparent'; }}>
               Sign Up
             </Link>
-            <Link
-              to="/login"
-              className="px-4 py-2 text-sm font-semibold text-white rounded-md bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all shadow-sm"
-            >
+            <Link to="/login" style={{
+              padding: '9px 16px',
+              fontSize: 14,
+              fontWeight: 700,
+              color: '#fff',
+              borderRadius: 10,
+              background: 'linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%)',
+              textDecoration: 'none',
+              transition: 'opacity 0.15s',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              fontFamily: 'inherit',
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
               Login
             </Link>
           </div>
@@ -88,69 +130,183 @@ const Login = () => {
       </header>
 
       {/* Main */}
-      <div className="flex-1 flex">
+      <div style={{ flex: 1, display: 'flex' }}>
         {/* Left — Form */}
-        <div className="flex-1 flex items-center justify-center p-6 lg:p-10">
-          <div className="w-full max-w-sm">
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 28px' }}>
+          <div style={{ width: '100%', maxWidth: 420 }}>
             {/* Title */}
-            <div className="mb-6 text-center">
-              <div className="inline-flex items-center justify-center w-13 h-13 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 mb-4 p-3">
-                <AlarmClock className="h-6 w-6 text-white" />
+            <div style={{ marginBottom: 32, textAlign: 'center' }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 52,
+                height: 52,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%)',
+                marginBottom: 16,
+                padding: 12,
+              }}>
+                <AlarmClock style={{ width: 24, height: 24, color: '#fff' }} />
               </div>
-              <h2 className={`text-3xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <h2 style={{ fontSize: 32, fontWeight: 800, marginBottom: 8, color: textPri, letterSpacing: '-0.5px' }}>
                 Welcome back
               </h2>
-              <p className={`text-base ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+              <p style={{ fontSize: 15, color: textSec, margin: 0 }}>
                 Sign in to continue to CodeAlarm
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              {/* Free Tier Info Banner */}
+              <div style={{
+                borderRadius: 10,
+                padding: 12,
+                border: `1.5px solid ${isDark ? '#1e3a8a' : '#bfdbfe'}`,
+                fontSize: 13,
+                background: isDark ? 'rgba(59, 130, 246, 0.1)' : '#eff6ff',
+                color: isDark ? '#93c5fd' : '#1e40af',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 8,
+              }}>
+                <svg style={{ width: 16, height: 16, marginTop: 1, flexShrink: 0 }} fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                <span style={{ lineHeight: 1.5 }}>
+                  <strong>Note:</strong> Backend is hosted on free tier and may take 30-60 seconds to wake up on first login.
+                </span>
+              </div>
+
               {error && (
-                <div className={`rounded-md p-3 border text-xs ${
-                  isDark ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50 border-red-200 text-red-600'
-                }`}>
+                <div style={{
+                  borderRadius: 10,
+                  padding: 12,
+                  border: `1.5px solid ${isDark ? '#7f1d1d' : '#fecaca'}`,
+                  fontSize: 13,
+                  background: isDark ? 'rgba(220, 38, 38, 0.1)' : '#fef2f2',
+                  color: isDark ? '#f87171' : '#dc2626',
+                }}>
                   {error}
+                </div>
+              )}
+
+              {showSlowWarning && loading && (
+                <div style={{
+                  borderRadius: 10,
+                  padding: 12,
+                  border: `1.5px solid ${isDark ? '#78350f' : '#fde68a'}`,
+                  fontSize: 13,
+                  background: isDark ? 'rgba(234, 179, 8, 0.1)' : '#fefce8',
+                  color: isDark ? '#fde047' : '#a16207',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 8,
+                }}>
+                  <svg style={{ animation: 'spin 0.7s linear infinite', width: 16, height: 16, marginTop: 1, flexShrink: 0 }} fill="none" viewBox="0 0 24 24">
+                    <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span style={{ lineHeight: 1.5 }}>
+                    Server is waking up... This may take up to a minute. Please wait.
+                  </span>
                 </div>
               )}
 
               {/* Username */}
               <div>
-                <label htmlFor="username" className={labelBase}>Username</label>
+                <label htmlFor="username" style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: textSec }}>
+                  Username
+                </label>
                 <input
-                  id="username" name="username" type="text" required autoFocus
-                  value={formData.username} onChange={handleChange}
-                  className={inputBase}
+                  id="username"
+                  name="username"
+                  type="text"
+                  required
+                  autoFocus
+                  value={formData.username}
+                  onChange={handleChange}
                   placeholder="Enter your username"
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    fontSize: 14,
+                    border: `1.5px solid ${border}`,
+                    borderRadius: 10,
+                    background: inputBg,
+                    color: textPri,
+                    outline: 'none',
+                    transition: 'border-color 0.15s',
+                    fontFamily: 'inherit',
+                  }}
+                  onFocus={e => e.target.style.borderColor = '#7c3aed'}
+                  onBlur={e => e.target.style.borderColor = border}
                 />
               </div>
 
               {/* Password */}
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label htmlFor="password" className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <label htmlFor="password" style={{ fontSize: 13, fontWeight: 600, color: textSec }}>
                     Password
                   </label>
-                  <Link
-                    to="/forgot-password"
-                    className="text-xs font-medium text-purple-500 hover:text-purple-400 transition-colors"
-                  >
+                  <Link to="/forgot-password" style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: '#7c3aed',
+                    textDecoration: 'none',
+                    transition: 'color 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#a78bfa'}
+                  onMouseLeave={e => e.currentTarget.style.color = '#7c3aed'}>
                     Forgot password?
                   </Link>
                 </div>
-                <div className="relative">
+                <div style={{ position: 'relative' }}>
                   <input
-                    id="password" name="password" type={showPassword ? 'text' : 'password'} required
-                    value={formData.password} onChange={handleChange}
-                    className={`${inputBase} pr-9`}
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
                     placeholder="••••••••"
+                    style={{
+                      width: '100%',
+                      padding: '12px 44px 12px 14px',
+                      fontSize: 14,
+                      border: `1.5px solid ${border}`,
+                      borderRadius: 10,
+                      background: inputBg,
+                      color: textPri,
+                      outline: 'none',
+                      transition: 'border-color 0.15s',
+                      fontFamily: 'inherit',
+                    }}
+                    onFocus={e => e.target.style.borderColor = '#7c3aed'}
+                    onBlur={e => e.target.style.borderColor = border}
                   />
                   <button
                     type="button"
-                    className={`absolute inset-y-0 right-0 pr-3 flex items-center ${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
                     onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      right: 0,
+                      bottom: 0,
+                      paddingRight: 12,
+                      display: 'flex',
+                      alignItems: 'center',
+                      color: textSec,
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'color 0.15s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.color = textPri}
+                    onMouseLeave={e => e.currentTarget.style.color = textSec}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? <EyeOff style={{ width: 18, height: 18 }} /> : <Eye style={{ width: 18, height: 18 }} />}
                   </button>
                 </div>
               </div>
@@ -158,27 +314,51 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 px-4 text-sm font-semibold text-white rounded-md bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-1 shadow-sm"
+                style={{
+                  width: '100%',
+                  padding: '12px 18px',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: '#fff',
+                  borderRadius: 10,
+                  background: 'linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%)',
+                  border: 'none',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.6 : 1,
+                  transition: 'opacity 0.15s',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                  marginTop: 4,
+                  fontFamily: 'inherit',
+                }}
+                onMouseEnter={e => { if (!loading) e.currentTarget.style.opacity = '0.9'; }}
+                onMouseLeave={e => { if (!loading) e.currentTarget.style.opacity = '1'; }}
               >
                 {loading ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    <svg style={{ animation: 'spin 0.7s linear infinite', width: 16, height: 16 }} fill="none" viewBox="0 0 24 24">
+                      <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
                     Signing in...
                   </div>
                 ) : (
-                  <span className="flex items-center justify-center gap-1.5">
-                    Sign in <ArrowRight className="h-4 w-4" />
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    Sign in <ArrowRight style={{ width: 16, height: 16 }} />
                   </span>
                 )}
               </button>
             </form>
 
-            <p className={`mt-5 text-center text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+            <p style={{ marginTop: 20, textAlign: 'center', fontSize: 14, color: textSec }}>
               Don't have an account?{' '}
-              <Link to="/register" className="font-semibold text-purple-500 hover:text-purple-400 transition-colors">
+              <Link to="/register" style={{
+                fontWeight: 700,
+                color: '#7c3aed',
+                textDecoration: 'none',
+                transition: 'color 0.15s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = '#a78bfa'}
+              onMouseLeave={e => e.currentTarget.style.color = '#7c3aed'}>
                 Sign up
               </Link>
             </p>
@@ -186,50 +366,64 @@ const Login = () => {
         </div>
 
         {/* Right — Promo */}
-        <div className={`hidden lg:flex lg:w-[46%] border-l flex-col justify-center px-10 py-8 ${
-          isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'
-        }`}>
+        <div style={{
+          display: 'none',
+          width: '46%',
+          borderLeft: `1.5px solid ${border}`,
+          flexDirection: 'column',
+          justifyContent: 'center',
+          padding: '48px 40px',
+          background: surface,
+        }}
+        className="lg-flex">
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-3 mb-8">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 32 }}>
             {[
-              { icon: CalendarClock, color: isDark ? 'text-purple-400' : 'text-purple-600', value: `${stats.upcoming}+`, label: 'Upcoming Contests' },
-              { icon: Trophy, color: isDark ? 'text-blue-400' : 'text-blue-600', value: `${stats.past}+`, label: 'Past Contests' },
-              { icon: Bell, color: isDark ? 'text-emerald-400' : 'text-emerald-600', value: `${stats.reminders}+`, label: 'Active Reminders' },
+              { icon: CalendarClock, color: isDark ? '#a78bfa' : '#7c3aed', value: `${stats.upcoming}+`, label: 'Upcoming Contests' },
+              { icon: Trophy, color: isDark ? '#60a5fa' : '#3b82f6', value: `${stats.past}+`, label: 'Past Contests' },
+              { icon: Bell, color: isDark ? '#4ade80' : '#16a34a', value: `${stats.reminders}+`, label: 'Active Reminders' },
             ].map(({ icon: Icon, color, value, label }) => (
-              <div key={label} className={`p-4 rounded-lg border ${
-                isDark ? 'bg-gray-800/60 border-gray-700' : 'bg-gray-50 border-gray-200'
-              }`}>
-                <Icon className={`h-5 w-5 mb-2 ${color}`} />
-                <div className={`text-lg font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>{value}</div>
-                <div className={`text-xs mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{label}</div>
+              <div key={label} style={{
+                padding: 18,
+                borderRadius: 12,
+                border: `1.5px solid ${border}`,
+                background: inputBg,
+              }}>
+                <Icon style={{ width: 20, height: 20, marginBottom: 8, color }} />
+                <div style={{ fontSize: 20, fontWeight: 800, lineHeight: 1.2, color: textPri }}>{value}</div>
+                <div style={{ fontSize: 12, marginTop: 4, color: textSec }}>{label}</div>
               </div>
             ))}
           </div>
 
           {/* Divider */}
-          <div className={`border-t mb-6 ${isDark ? 'border-gray-800' : 'border-gray-100'}`} />
+          <div style={{ borderTop: `1.5px solid ${border}`, marginBottom: 24 }} />
 
           {/* Features */}
           <div>
-            <h3 className={`text-base font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            <h3 style={{ fontSize: 17, fontWeight: 700, marginBottom: 16, color: textPri }}>
               Why choose CodeAlarm?
             </h3>
-            <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {features.map(({ text }) => (
-                <div key={text} className="flex items-start gap-2.5">
-                  <CheckCircle2 className={`h-4 w-4 mt-0.5 flex-shrink-0 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
-                  <p className={`text-sm leading-snug ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{text}</p>
+                <div key={text} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <CheckCircle2 style={{ width: 18, height: 18, marginTop: 2, flexShrink: 0, color: isDark ? '#a78bfa' : '#7c3aed' }} />
+                  <p style={{ fontSize: 14, lineHeight: 1.5, color: isDark ? '#d1d5db' : '#6b7280', margin: 0 }}>{text}</p>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Bottom badge */}
-          <div className={`mt-8 rounded-lg border p-4 ${
-            isDark ? 'bg-purple-500/5 border-purple-500/20' : 'bg-purple-50 border-purple-100'
-          }`}>
-            <p className={`text-xs leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-              <span className={`font-semibold ${isDark ? 'text-purple-300' : 'text-purple-700'}`}>Free forever.</span>{' '}
+          <div style={{
+            marginTop: 32,
+            borderRadius: 12,
+            border: `1.5px solid ${isDark ? 'rgba(124, 58, 237, 0.2)' : '#e9d5ff'}`,
+            padding: 16,
+            background: isDark ? 'rgba(124, 58, 237, 0.05)' : '#faf5ff',
+          }}>
+            <p style={{ fontSize: 13, lineHeight: 1.6, color: textSec, margin: 0 }}>
+              <span style={{ fontWeight: 700, color: isDark ? '#c4b5fd' : '#7c3aed' }}>Free forever.</span>{' '}
               All features are completely free for the competitive programming community — no credit card required.
             </p>
           </div>
@@ -237,26 +431,43 @@ const Login = () => {
       </div>
 
       {/* Footer */}
-      <footer className={`border-t ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-            <Link to="/" className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-              <AlarmClock className={`h-4 w-4 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
-              <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>CodeAlarm</span>
+      <footer style={{
+        borderTop: `1.5px solid ${border}`,
+        background: surface,
+      }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '16px 28px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}
+            className="md-flex-row">
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none', transition: 'opacity 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+              <AlarmClock style={{ width: 16, height: 16, color: isDark ? '#a78bfa' : '#7c3aed' }} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: textPri }}>CodeAlarm</span>
             </Link>
-            <div className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+            <div style={{ fontSize: 12, color: textSec }}>
               © 2024 CodeAlarm. All rights reserved.
             </div>
-            <div className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-              Made with <Heart className="inline h-3 w-3 text-red-500" /> by{' '}
+            <div style={{ fontSize: 12, color: textSec }}>
+              Made with <Heart style={{ display: 'inline', width: 12, height: 12, color: '#ef4444' }} /> by{' '}
               <a href="https://github.com/Prathamesh-2005" target="_blank" rel="noopener noreferrer"
-                className="font-medium text-purple-500 hover:text-purple-400 transition-colors">
+                style={{ fontWeight: 600, color: '#7c3aed', textDecoration: 'none', transition: 'color 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#a78bfa'}
+                onMouseLeave={e => e.currentTarget.style.color = '#7c3aed'}>
                 Prathamesh Jadhav
               </a>
             </div>
           </div>
         </div>
       </footer>
+
+      <style>{`
+        @media (min-width: 1024px) {
+          .lg-flex { display: flex !important; }
+        }
+        @media (min-width: 768px) {
+          .md-flex-row { flex-direction: row !important; }
+        }
+      `}</style>
     </div>
   );
 };

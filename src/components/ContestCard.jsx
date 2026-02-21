@@ -1,242 +1,292 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, ExternalLink, Bell, CheckCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import ReminderModal from './ReminderModel';
 
-const ContestCard = ({ 
-  contest, 
-  isPast = false, 
+// ── SVG Icons ─────────────────────────────────────────────────────
+const CalendarIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+    <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
+const ClockIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+  </svg>
+);
+const LinkIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+    <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+  </svg>
+);
+const BellIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+  </svg>
+);
+const CheckIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+
+// ── Platform tokens ───────────────────────────────────────────────
+const platformTokens = {
+  CodeChef:   { dot: '#f97316', dimDot: '#7c3010', label: 'CodeChef' },
+  Codeforces: { dot: '#3b82f6', dimDot: '#1e3a5f', label: 'Codeforces' },
+  LeetCode:   { dot: '#f59e0b', dimDot: '#78350f', label: 'LeetCode' },
+};
+
+// ── Helpers ───────────────────────────────────────────────────────
+const formatDate = (ds) =>
+  new Date(ds).toLocaleDateString('en-US', {
+    weekday: 'short', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+
+const getTimeUntilStart = (ds) => {
+  const diff = new Date(ds) - new Date();
+  if (diff <= 0) return null;
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+};
+
+const getStatus = (start, end) => {
+  const now = new Date();
+  const s = new Date(start), e = new Date(end);
+  if (now < s) return 'upcoming';
+  if (now <= e) return 'live';
+  return 'ended';
+};
+
+// ── Component ─────────────────────────────────────────────────────
+const ContestCard = ({
+  contest,
+  isPast = false,
   formatDuration,
   userReminders = [],
   onReminderSet,
-  onReminderDelete 
+  onReminderDelete,
 }) => {
   const { isDark } = useTheme();
-  const [showReminderModal, setShowReminderModal] = useState(false);
-  
-  // Check if user has reminders for this contest
-  const hasReminder = userReminders.some(reminder => 
-    reminder.contest?.contestId === contest.contestId
-  );
+  const [showModal, setShowModal] = useState(false);
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getTimeStatus = () => {
-    const now = new Date();
-    const start = new Date(contest.contestStartDate);
-    const end = new Date(contest.contestEndDate);
-
-    if (now < start) {
-      return { 
-        status: 'upcoming', 
-        text: 'Upcoming', 
-        color: isDark ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-blue-100 text-blue-700 border border-blue-200'
-      };
-    } else if (now >= start && now <= end) {
-      return { 
-        status: 'live', 
-        text: 'Live Now', 
-        color: isDark ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-green-100 text-green-700 border border-green-200'
-      };
-    } else {
-      return { 
-        status: 'ended', 
-        text: 'Ended', 
-        color: isDark ? 'bg-gray-700 text-gray-400 border border-gray-600' : 'bg-gray-100 text-gray-600 border border-gray-200'
-      };
-    }
-  };
-
-  const getPlatformColor = (platform) => {
-    if (isDark) {
-      const colors = {
-        'CodeChef': 'bg-orange-500/80',
-        'Codeforces': 'bg-blue-500/80',
-        'LeetCode': 'bg-yellow-500/80'
-      };
-      return colors[platform] || 'bg-gray-500';
-    } else {
-      const colors = {
-        'CodeChef': 'bg-orange-500',
-        'Codeforces': 'bg-blue-500',
-        'LeetCode': 'bg-yellow-500'
-      };
-      return colors[platform] || 'bg-gray-500';
-    }
-  };
-
-  const getTimeUntilStart = () => {
-    const now = new Date();
-    const start = new Date(contest.contestStartDate);
-    const diff = start - now;
-
-    if (diff <= 0) return null;
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    if (days > 0) return `${days}d ${hours}h`;
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    return `${minutes}m`;
-  };
-
-  const timeStatus = getTimeStatus();
-  const timeUntilStart = getTimeUntilStart();
+  const hasReminder = userReminders.some(r => r.contest?.contestId === contest.contestId);
+  const status = getStatus(contest.contestStartDate, contest.contestEndDate);
+  const timeUntil = getTimeUntilStart(contest.contestStartDate);
+  const pt = platformTokens[contest.platform] || { dot: '#888', dimDot: '#333', label: contest.platform };
 
   const handleReminderClick = () => {
     if (hasReminder) {
-      // Find and delete the reminder
-      const reminder = userReminders.find(r => 
-        r.contest?.contestId === contest.contestId
-      );
-      if (reminder && onReminderDelete) {
-        onReminderDelete(reminder.id);
-      }
+      const r = userReminders.find(r => r.contest?.contestId === contest.contestId);
+      if (r && onReminderDelete) onReminderDelete(r.id);
     } else {
-      // Show modal to set reminder
-      setShowReminderModal(true);
+      setShowModal(true);
     }
   };
 
-  // Determine what to show in the bottom status bar
-  const getBottomStatusBar = () => {
-    if (timeStatus.status === 'live') {
-      return {
-        show: true,
-        className: isDark 
-          ? 'bg-green-500/20 text-green-400 border-t border-green-500/30' 
-          : 'bg-green-50 text-green-700 border-t border-green-200',
-        content: '🔴 Contest is Live Now!'
-      };
-    } else if (timeStatus.status === 'upcoming' && timeUntilStart) {
-      return {
-        show: true,
-        className: isDark 
-          ? 'bg-blue-500/20 text-blue-400 border-t border-blue-500/30' 
-          : 'bg-blue-50 text-blue-700 border-t border-blue-200',
-        content: `⏰ Starting in ${timeUntilStart}`
-      };
-    }
-    return { show: false };
-  };
+  const durationLabel = formatDuration
+    ? formatDuration(contest.contestDuration)
+    : `${Math.floor(contest.contestDuration / 60)}m`;
 
-  const bottomStatusBar = getBottomStatusBar();
+  // ── Tokens ───────────────────────────────────────────────────
+  const surface = isDark ? '#111111' : '#ffffff';
+  const border  = isDark ? '#1e1e1e' : '#e5e7eb';
+  const hoverBorder = isDark ? '#2e2e2e' : '#d1d5db';
+  const textPri = isDark ? '#f0f0f0' : '#111111';
+  const textSec = isDark ? '#666666' : '#9ca3af';
+  const inputBg = isDark ? '#161616' : '#f9fafb';
+
+  // Status badge
+  const statusBadge = {
+    upcoming: { label: 'Upcoming', bg: isDark ? '#0c1a3a' : '#eff6ff', color: isDark ? '#60a5fa' : '#3b82f6' },
+    live:     { label: 'Live',     bg: isDark ? '#052e16' : '#f0fdf4', color: isDark ? '#4ade80' : '#16a34a' },
+    ended:    { label: 'Ended',    bg: isDark ? '#1a1a1a' : '#f9fafb', color: isDark ? '#555'    : '#9ca3af' },
+  }[status];
 
   return (
     <>
-      <div className={`rounded-lg border transition-all duration-300 overflow-hidden flex flex-col h-full ${
-        isDark 
-          ? 'bg-gray-900 border-gray-800 hover:border-gray-700' 
-          : 'bg-white border-gray-200 hover:border-gray-300'
-      }`}>
-        {/* Header */}
-        <div className="p-5 pb-4 flex-1">
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center space-x-2">
-              <div className={`w-2.5 h-2.5 rounded-full ${getPlatformColor(contest.platform)}`}></div>
-              <span className={`text-sm font-medium ${
-                isDark ? 'text-gray-400' : 'text-gray-600'
-              }`}>{contest.platform}</span>
+      <div
+        style={{
+          background: surface,
+          border: `1.5px solid ${border}`,
+          borderRadius: 16,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          fontFamily: '"DM Sans", sans-serif',
+          transition: 'border-color 0.15s',
+          cursor: 'default',
+        }}
+        onMouseEnter={e => e.currentTarget.style.borderColor = hoverBorder}
+        onMouseLeave={e => e.currentTarget.style.borderColor = border}
+      >
+        {/* Live bar */}
+        {status === 'live' && (
+          <div style={{
+            background: isDark ? '#052e16' : '#f0fdf4',
+            borderBottom: `1px solid ${isDark ? '#14532d' : '#bbf7d0'}`,
+            padding: '8px 20px',
+            fontSize: 12.5,
+            fontWeight: 700,
+            color: isDark ? '#4ade80' : '#16a34a',
+            letterSpacing: '0.05em',
+            display: 'flex', alignItems: 'center', gap: 7,
+          }}>
+            <span style={{
+              width: 7, height: 7, borderRadius: '50%',
+              background: isDark ? '#4ade80' : '#16a34a',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }} />
+            LIVE NOW
+          </div>
+        )}
+
+        {/* Body */}
+        <div style={{ padding: '22px 22px 16px', flex: 1 }}>
+
+          {/* Platform + status */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{
+                width: 8, height: 8, borderRadius: '50%',
+                background: status === 'ended' ? pt.dimDot : pt.dot,
+                flexShrink: 0,
+              }} />
+              <span style={{ fontSize: 12.5, fontWeight: 600, color: textSec, letterSpacing: '0.03em' }}>
+                {pt.label}
+              </span>
             </div>
-            <div className={`px-2.5 py-1 rounded-md text-xs font-medium ${timeStatus.color}`}>
-              {timeStatus.text}
-            </div>
+
+            <span style={{
+              fontSize: 11.5, fontWeight: 700, letterSpacing: '0.05em',
+              textTransform: 'uppercase',
+              background: statusBadge.bg,
+              color: statusBadge.color,
+              padding: '4px 10px', borderRadius: 7,
+            }}>
+              {statusBadge.label}
+            </span>
           </div>
 
-          <h3 className={`text-lg font-semibold mb-3 min-h-[3rem] flex items-start ${
-            isDark 
-              ? 'text-white hover:text-purple-400' 
-              : 'text-gray-900 hover:text-purple-600'
-          } transition-colors`}>
+          {/* Name */}
+          <p style={{
+            fontSize: 15, fontWeight: 700,
+            color: textPri,
+            margin: '0 0 16px',
+            lineHeight: 1.45,
+            letterSpacing: '-0.2px',
+            minHeight: 44,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}>
             {contest.contestName}
-          </h3>
+          </p>
 
-          {/* Time Information */}
-          <div className="space-y-2">
-            <div className={`flex items-center text-sm ${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>
-              <Calendar className="h-4 w-4 mr-2" />
+          {/* Meta */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: textSec, fontSize: 13 }}>
+              <CalendarIcon />
               <span>{formatDate(contest.contestStartDate)}</span>
             </div>
-            
-            <div className={`flex items-center text-sm ${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>
-              <Clock className="h-4 w-4 mr-2" />
-              <span>Duration: {formatDuration ? formatDuration(contest.contestDuration) : `${Math.floor(contest.contestDuration / 60)}m`}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: textSec, fontSize: 13 }}>
+              <ClockIcon />
+              <span>Duration: {durationLabel}</span>
+              {timeUntil && status === 'upcoming' && (
+                <>
+                  <span style={{ color: isDark ? '#2a2a2a' : '#e5e7eb' }}>·</span>
+                  <span style={{ color: isDark ? '#4a8af4' : '#3b82f6', fontWeight: 600 }}>
+                    in {timeUntil}
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </div>
 
+        {/* Divider */}
+        <div style={{ height: 1, background: border, margin: '0 22px' }} />
+
         {/* Actions */}
-        <div className="px-5 pb-4 flex items-center justify-between mt-auto">
+        <div style={{ padding: '14px 22px', display: 'flex', alignItems: 'center', gap: 10 }}>
           <a
             href={contest.contestUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-sm font-medium rounded-lg transition-all"
+            style={{
+              flex: 1,
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+              padding: '10px 14px',
+              borderRadius: 9,
+              background: isDark ? '#f0f0f0' : '#111111',
+              color: isDark ? '#111' : '#fff',
+              fontSize: 13, fontWeight: 700,
+              fontFamily: 'inherit',
+              textDecoration: 'none',
+              transition: 'opacity 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
           >
-            <ExternalLink className="h-4 w-4 mr-2" />
+            <LinkIcon />
             View Contest
           </a>
 
           {!isPast && (
             <button
               onClick={handleReminderClick}
-              className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                hasReminder
-                  ? (isDark 
-                    ? 'bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30' 
-                    : 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200')
-                  : (isDark 
-                    ? 'bg-gray-800 text-gray-300 border border-gray-700 hover:bg-gray-700' 
-                    : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200')
-              }`}
               title={hasReminder ? 'Remove reminder' : 'Set reminder'}
+              style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                padding: '10px 14px',
+                borderRadius: 9,
+                border: `1.5px solid ${hasReminder
+                  ? (isDark ? '#14532d' : '#bbf7d0')
+                  : border}`,
+                background: hasReminder
+                  ? (isDark ? '#052e16' : '#f0fdf4')
+                  : 'transparent',
+                color: hasReminder
+                  ? (isDark ? '#4ade80' : '#16a34a')
+                  : textSec,
+                fontSize: 13, fontWeight: 600,
+                fontFamily: 'inherit',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+                whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={e => { if (!hasReminder) { e.currentTarget.style.background = inputBg; e.currentTarget.style.color = textPri; }}}
+              onMouseLeave={e => { if (!hasReminder) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = textSec; }}}
             >
-              {hasReminder ? (
-                <>
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Reminder Set
-                </>
-              ) : (
-                <>
-                  <Bell className="h-4 w-4 mr-2" />
-                  Set Reminder
-                </>
-              )}
+              {hasReminder ? <CheckIcon /> : <BellIcon />}
+              {hasReminder ? 'Reminder Set' : 'Remind me'}
             </button>
           )}
         </div>
-
-        {/* Contest Status Bar - Always at the bottom when applicable */}
-        {bottomStatusBar.show && (
-          <div className={`${bottomStatusBar.className} text-center py-2.5 text-sm font-medium`}>
-            {bottomStatusBar.content}
-          </div>
-        )}
       </div>
 
-      {/* Reminder Modal */}
-      {showReminderModal && (
+      {showModal && (
         <ReminderModal
           contest={contest}
-          onClose={() => setShowReminderModal(false)}
+          onClose={() => setShowModal(false)}
           onReminderSet={onReminderSet}
         />
       )}
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.3; }
+        }
+      `}</style>
     </>
   );
 };

@@ -1,398 +1,421 @@
-import React, { useState } from 'react';
-import { X, Bell, Clock, Mail, AlertCircle, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 
+// ── Toast Component ──────────────────────────────────────────────
+const Toast = ({ message, onDone }) => {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    requestAnimationFrame(() => setVisible(true));
+    const hide = setTimeout(() => setVisible(false), 2800);
+    const done = setTimeout(() => onDone(), 3200);
+    return () => { clearTimeout(hide); clearTimeout(done); };
+  }, [onDone]);
+
+  return (
+    <div style={{
+      position: 'fixed', bottom: 28, left: '50%',
+      transform: `translateX(-50%) translateY(${visible ? 0 : 24}px)`,
+      opacity: visible ? 1 : 0,
+      transition: 'all 0.35s cubic-bezier(.22,1,.36,1)',
+      zIndex: 9999,
+      display: 'flex', alignItems: 'center', gap: 10,
+      background: '#0f0f0f', border: '1px solid #2a2a2a',
+      borderRadius: 12, padding: '12px 20px',
+      boxShadow: '0 8px 40px rgba(0,0,0,0.45)',
+      fontFamily: '"DM Sans", sans-serif',
+      fontSize: 14, color: '#e5e5e5',
+      whiteSpace: 'nowrap',
+    }}>
+      <span style={{
+        width: 20, height: 20, borderRadius: '50%',
+        background: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0,
+      }}>
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+          <path d="M2 5.5L4.5 8L9 3" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </span>
+      {message}
+    </div>
+  );
+};
+
+// ── Platform chips ───────────────────────────────────────────────
+const platformStyle = {
+  CodeChef:   { bg: '#431407', color: '#fb923c', dot: '#f97316' },
+  Codeforces: { bg: '#0c1a3a', color: '#60a5fa', dot: '#3b82f6' },
+  LeetCode:   { bg: '#3b2600', color: '#fbbf24', dot: '#f59e0b' },
+};
+
+// ── Reminder options (no emojis) ─────────────────────────────────
+const REMINDER_OPTIONS = [
+  { value: 'BEFORE_1_MINUTE',  label: '1 min',    sub: 'before' },
+  { value: 'BEFORE_5_MINUTES', label: '5 min',    sub: 'before' },
+  { value: 'BEFORE_10_MINUTES',label: '10 min',   sub: 'before' },
+  { value: 'BEFORE_15_MINUTES',label: '15 min',   sub: 'before' },
+  { value: 'BEFORE_30_MINUTES',label: '30 min',   sub: 'before' },
+  { value: 'BEFORE_1_HOUR',    label: '1 hr',     sub: 'before' },
+  { value: 'BEFORE_2_HOURS',   label: '2 hrs',    sub: 'before' },
+  { value: 'BEFORE_1_DAY',     label: '1 day',    sub: 'before' },
+];
+
+// ── Tiny SVG icons ───────────────────────────────────────────────
+const BellIcon = ({ size = 16, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+  </svg>
+);
+const ClockIcon = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+  </svg>
+);
+const MailIcon = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,4 12,13 2,4"/>
+  </svg>
+);
+const XIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
+
+// ── Main Component ───────────────────────────────────────────────
 const ReminderModal = ({ contest, onClose, onReminderSet }) => {
   const { isDark } = useTheme();
   const [selectedTime, setSelectedTime] = useState('BEFORE_10_MINUTES');
   const [customMessage, setCustomMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-
-  const reminderOptions = [
-    { value: 'BEFORE_1_MINUTE', label: '1 minute before', icon: '⚡' },
-    { value: 'BEFORE_5_MINUTES', label: '5 minutes before', icon: '🔔' },
-    { value: 'BEFORE_10_MINUTES', label: '10 minutes before', icon: '⏰' },
-    { value: 'BEFORE_15_MINUTES', label: '15 minutes before', icon: '⏱️' },
-    { value: 'BEFORE_30_MINUTES', label: '30 minutes before', icon: '📅' },
-    { value: 'BEFORE_1_HOUR', label: '1 hour before', icon: '⏳' },
-    { value: 'BEFORE_2_HOURS', label: '2 hours before', icon: '📢' },
-    { value: 'BEFORE_1_DAY', label: '1 day before', icon: '📆' }
-  ];
+  const [toast, setToast] = useState(null);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      weekday: 'short', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit',
     });
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     setLoading(true);
     setError('');
 
     try {
       const token = localStorage.getItem('token');
-      
-      if (!token) {
-        throw new Error('Please log in to set reminders');
-      }
-
-      console.log('Sending request with:', {
-        reminderTime: selectedTime,
-        customMessage: customMessage.trim() || null
-      });
+      if (!token) throw new Error('Please log in to set reminders');
 
       const response = await fetch(`https://code-alarm-2.onrender.com/api/reminders/set/${contest.contestId}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          reminderTime: selectedTime,
-          customMessage: customMessage.trim() || null
-        })
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ reminderTime: selectedTime, customMessage: customMessage.trim() || null }),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
-
       if (!response.ok) {
-        let errorMessage = 'Failed to set reminder';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorData.message || errorMessage;
-        } catch (parseError) {
-          try {
-            const errorText = await response.text();
-            errorMessage = errorText || errorMessage;
-          } catch (textError) {
-            errorMessage = response.statusText || errorMessage;
-          }
-        }
-        throw new Error(errorMessage);
+        let msg = 'Failed to set reminder';
+        try { const d = await response.json(); msg = d.error || d.message || msg; } catch {}
+        throw new Error(msg);
       }
 
-      const contentType = response.headers.get('content-type');
+      const ct = response.headers.get('content-type');
       let reminderData = null;
-      
-      if (contentType && contentType.includes('application/json')) {
-        const responseText = await response.text();
-        if (responseText.trim()) {
-          try {
-            reminderData = JSON.parse(responseText);
-            console.log('Parsed response data:', reminderData);
-          } catch (parseError) {
-            console.error('JSON Parse Error:', parseError);
-            console.error('Response text:', responseText);
-            throw new Error('Invalid response format from server');
-          }
-        }
+      if (ct?.includes('application/json')) {
+        const txt = await response.text();
+        if (txt.trim()) { try { reminderData = JSON.parse(txt); } catch {} }
       }
 
-      setSuccess(true);
-      
-      if (onReminderSet && reminderData) {
-        onReminderSet(reminderData);
-      }
-
-      setTimeout(() => {
-        onClose();
-      }, 2000);
+      const label = REMINDER_OPTIONS.find(o => o.value === selectedTime)?.label ?? '';
+      setToast(`Reminder set — ${label} before the contest`);
+      if (onReminderSet && reminderData) onReminderSet(reminderData);
+      setTimeout(() => onClose(), 3300);
 
     } catch (err) {
       setError(err.message);
-      console.error('Error setting reminder:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const getPlatformColor = (platform) => {
-    if (isDark) {
-      const colors = {
-        'CodeChef': 'text-orange-400 bg-orange-500/20 border border-orange-500/30',
-        'Codeforces': 'text-blue-400 bg-blue-500/20 border border-blue-500/30',
-        'LeetCode': 'text-yellow-400 bg-yellow-500/20 border border-yellow-500/30'
-      };
-      return colors[platform] || 'text-gray-400 bg-gray-500/20 border border-gray-600';
-    } else {
-      const colors = {
-        'CodeChef': 'text-orange-700 bg-orange-100 border border-orange-200',
-        'Codeforces': 'text-blue-700 bg-blue-100 border border-blue-200',
-        'LeetCode': 'text-yellow-700 bg-yellow-100 border border-yellow-200'
-      };
-      return colors[platform] || 'text-gray-700 bg-gray-100 border border-gray-200';
-    }
-  };
+  // ── Shared tokens ────────────────────────────────────────────
+  const surface  = isDark ? '#111111' : '#ffffff';
+  const border   = isDark ? '#222222' : '#e5e7eb';
+  const textPri  = isDark ? '#f0f0f0' : '#111111';
+  const textSec  = isDark ? '#888888' : '#6b7280';
+  const inputBg  = isDark ? '#181818' : '#f9fafb';
+  const hoverBg  = isDark ? '#1a1a1a' : '#f3f4f6';
 
-  if (success) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className={`rounded-xl max-w-md w-full p-6 text-center border ${
-          isDark 
-            ? 'bg-gray-900 border-gray-700' 
-            : 'bg-white border-gray-200'
-        }`}>
-          <div className="mb-4">
-            <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
-          </div>
-          <h3 className={`text-xl font-bold mb-2 ${
-            isDark ? 'text-white' : 'text-gray-900'
-          }`}>Reminder Set Successfully!</h3>
-          <p className={`mb-2 ${
-            isDark ? 'text-gray-300' : 'text-gray-600'
-          }`}>
-            You'll receive an email reminder {reminderOptions.find(opt => opt.value === selectedTime)?.label} the contest starts.
-          </p>
-          {customMessage.trim() && (
-            <div className={`mt-4 p-3 rounded-lg border ${
-              isDark 
-                ? 'bg-blue-500/20 border-blue-500/30' 
-                : 'bg-blue-50 border-blue-200'
-            }`}>
-              <p className={`text-sm font-medium ${
-                isDark ? 'text-blue-300' : 'text-blue-700'
-              }`}>Your custom message:</p>
-              <p className={`text-sm mt-1 ${
-                isDark ? 'text-blue-200' : 'text-blue-600'
-              }`}>"{customMessage.trim()}"</p>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
+  const pStyle = platformStyle[contest.platform] || { bg: '#1a1a1a', color: '#999', dot: '#666' };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className={`rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto border ${
-        isDark 
-          ? 'bg-gray-900 border-gray-700' 
-          : 'bg-white border-gray-200'
-      }`}>
-        {/* Header */}
-        <div className={`flex items-center justify-between p-6 border-b ${
-          isDark ? 'border-gray-700' : 'border-gray-200'
-        }`}>
-          <div className="flex items-center">
-            <Bell className="h-6 w-6 text-purple-500 mr-2" />
-            <h2 className={`text-xl font-bold ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>Set Reminder</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className={`p-2 rounded-lg transition-colors ${
-              isDark 
-                ? 'hover:bg-gray-800 text-gray-400' 
-                : 'hover:bg-gray-100 text-gray-600'
-            }`}
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 40,
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
+        }}
+      />
 
-        {/* Contest Info */}
-        <div className={`p-6 border-b ${
-          isDark 
-            ? 'border-gray-700 bg-gray-800/50' 
-            : 'border-gray-200 bg-gray-50'
-        }`}>
-          <div className="flex items-start space-x-3">
-            <div className={`px-3 py-1 rounded-md text-xs font-medium ${getPlatformColor(contest.platform)}`}>
-              {contest.platform}
-            </div>
-          </div>
-          <h3 className={`text-lg font-semibold mt-2 mb-1 ${
-            isDark ? 'text-white' : 'text-gray-900'
-          }`}>
-            {contest.contestName}
-          </h3>
-          <div className={`flex items-center text-sm ${
-            isDark ? 'text-gray-300' : 'text-gray-600'
-          }`}>
-            <Clock className="h-4 w-4 mr-1" />
-            <span>{formatDate(contest.contestStartDate)}</span>
-          </div>
-        </div>
+      {/* Modal */}
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 50,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 16, pointerEvents: 'none',
+      }}>
+        <div style={{
+          pointerEvents: 'auto',
+          width: '100%', maxWidth: 480,
+          maxHeight: '90vh', overflowY: 'auto',
+          background: surface,
+          border: `1px solid ${border}`,
+          borderRadius: 18,
+          fontFamily: '"DM Sans", sans-serif',
+          boxShadow: isDark
+            ? '0 32px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04)'
+            : '0 20px 60px rgba(0,0,0,0.12)',
+        }}>
 
-        {/* Form */}
-        <div className="p-6">
-          {/* Reminder Time Selection */}
-          <div className="mb-6">
-            <label className={`block text-sm font-medium mb-3 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>
-              When would you like to be reminded?
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              {reminderOptions.map((option) => (
-                <label
-                  key={option.value}
-                  className={`relative flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                    selectedTime === option.value
-                      ? (isDark 
-                        ? 'border-purple-500 bg-purple-500/20' 
-                        : 'border-purple-500 bg-purple-50')
-                      : (isDark 
-                        ? 'border-gray-700 hover:border-gray-600 hover:bg-gray-800/50' 
-                        : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50')
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="reminderTime"
-                    value={option.value}
-                    checked={selectedTime === option.value}
-                    onChange={(e) => setSelectedTime(e.target.value)}
-                    className="sr-only"
-                  />
-                  <span className="text-lg mr-2">{option.icon}</span>
-                  <span className={`text-sm font-medium ${
-                    isDark ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    {option.label}
-                  </span>
-                  {selectedTime === option.value && (
-                    <div className="absolute top-2 right-2">
-                      <CheckCircle className="h-4 w-4 text-purple-500" />
-                    </div>
-                  )}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Custom Message */}
-          <div className="mb-6">
-            <label htmlFor="customMessage" className={`block text-sm font-medium mb-2 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>
-              Custom Message (Optional)
-            </label>
-            <div className="relative">
-              <textarea
-                id="customMessage"
-                value={customMessage}
-                onChange={(e) => setCustomMessage(e.target.value)}
-                placeholder="Add a personal note to your reminder... e.g., 'Don't forget to prepare DP problems!' or 'Contest with cash prizes!'"
-                rows={4}
-                className={`w-full px-4 py-3.5 border rounded-lg text-base focus:ring-2 focus:ring-purple-500 resize-none transition-colors ${
-                  isDark 
-                    ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-purple-500' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-purple-500'
-                }`}
-                maxLength={200}
-              />
-              <div className={`absolute bottom-2 right-3 text-xs ${
-                isDark ? 'text-gray-500' : 'text-gray-400'
-              }`}>
-                {customMessage.length}/200
+          {/* Header */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '20px 24px',
+            borderBottom: `1px solid ${border}`,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{
+                width: 34, height: 34, borderRadius: 10,
+                background: isDark ? '#1c1c1c' : '#f3f4f6',
+                border: `1px solid ${border}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: textPri,
+              }}>
+                <BellIcon size={15} />
               </div>
+              <span style={{ fontSize: 15, fontWeight: 600, color: textPri, letterSpacing: '-0.2px' }}>
+                Set Reminder
+              </span>
             </div>
-            {customMessage.trim() && (
-              <div className={`mt-2 p-2 rounded-md border ${
-                isDark 
-                  ? 'bg-green-500/20 border-green-500/30' 
-                  : 'bg-green-50 border-green-200'
-              }`}>
-                <p className={`text-xs ${
-                  isDark ? 'text-green-400' : 'text-green-700'
-                }`}>
-                  ✨ Your custom message will be included in the email reminder
-                </p>
+            <button
+              onClick={onClose}
+              style={{
+                width: 30, height: 30, borderRadius: 8,
+                background: 'transparent', border: `1px solid ${border}`,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: textSec, transition: 'background 0.15s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = hoverBg}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <XIcon size={14} />
+            </button>
+          </div>
+
+          {/* Contest Info */}
+          <div style={{
+            padding: '16px 24px',
+            borderBottom: `1px solid ${border}`,
+            background: isDark ? '#0d0d0d' : '#fafafa',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              {/* Platform badge */}
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                fontSize: 11, fontWeight: 600, letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                background: pStyle.bg, color: pStyle.color,
+                padding: '3px 9px', borderRadius: 6,
+              }}>
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: pStyle.dot }} />
+                {contest.platform}
+              </span>
+            </div>
+            <p style={{ fontSize: 15, fontWeight: 600, color: textPri, margin: '0 0 6px', lineHeight: 1.4 }}>
+              {contest.contestName}
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: textSec, fontSize: 12 }}>
+              <ClockIcon size={12} />
+              <span>{formatDate(contest.contestStartDate)}</span>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div style={{ padding: '22px 24px' }}>
+
+            {/* When */}
+            <p style={{ fontSize: 12, fontWeight: 600, color: textSec, letterSpacing: '0.06em', textTransform: 'uppercase', margin: '0 0 12px' }}>
+              Notify me
+            </p>
+
+            <div style={{
+              display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 22,
+            }}>
+              {REMINDER_OPTIONS.map(opt => {
+                const active = selectedTime === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => setSelectedTime(opt.value)}
+                    style={{
+                      padding: '10px 6px',
+                      borderRadius: 10,
+                      border: active
+                        ? `1.5px solid ${isDark ? '#e5e5e5' : '#111'}`
+                        : `1.5px solid ${border}`,
+                      background: active
+                        ? (isDark ? '#f0f0f0' : '#111')
+                        : 'transparent',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{
+                      fontSize: 14, fontWeight: 700,
+                      color: active ? (isDark ? '#111' : '#fff') : textPri,
+                      letterSpacing: '-0.3px',
+                    }}>
+                      {opt.label}
+                    </div>
+                    <div style={{
+                      fontSize: 10, marginTop: 1,
+                      color: active ? (isDark ? '#555' : '#aaa') : textSec,
+                    }}>
+                      {opt.sub}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Custom message */}
+            <p style={{ fontSize: 12, fontWeight: 600, color: textSec, letterSpacing: '0.06em', textTransform: 'uppercase', margin: '0 0 10px' }}>
+              Note  <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>— optional</span>
+            </p>
+            <div style={{ position: 'relative', marginBottom: 20 }}>
+              <textarea
+                value={customMessage}
+                onChange={e => setCustomMessage(e.target.value)}
+                placeholder="e.g. Prep DP problems beforehand"
+                maxLength={200}
+                rows={3}
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  padding: '12px 14px',
+                  border: `1.5px solid ${border}`,
+                  borderRadius: 10,
+                  background: inputBg,
+                  color: textPri,
+                  fontSize: 13.5, fontFamily: 'inherit',
+                  resize: 'none', outline: 'none',
+                  transition: 'border-color 0.15s',
+                  lineHeight: 1.5,
+                }}
+                onFocus={e => e.target.style.borderColor = isDark ? '#444' : '#aaa'}
+                onBlur={e => e.target.style.borderColor = border}
+              />
+              <span style={{
+                position: 'absolute', bottom: 9, right: 12,
+                fontSize: 11, color: textSec,
+                pointerEvents: 'none',
+              }}>
+                {customMessage.length}/200
+              </span>
+            </div>
+
+            {/* Email note */}
+            <div style={{
+              display: 'flex', alignItems: 'flex-start', gap: 10,
+              padding: '11px 14px',
+              borderRadius: 10,
+              border: `1.5px solid ${border}`,
+              background: isDark ? '#0d0d0d' : '#f9fafb',
+              marginBottom: 20,
+            }}>
+              <MailIcon size={13} style={{ flexShrink: 0, marginTop: 1, color: textSec }} />
+              <p style={{ margin: 0, fontSize: 12, color: textSec, lineHeight: 1.6 }}>
+                Reminder sends to your registered email. Check profile settings if you're not receiving emails.
+              </p>
+            </div>
+
+            {/* Error */}
+            {error && (
+              <div style={{
+                padding: '10px 14px', borderRadius: 10, marginBottom: 16,
+                border: '1.5px solid #7f1d1d',
+                background: isDark ? '#1c0a0a' : '#fef2f2',
+                fontSize: 13, color: isDark ? '#f87171' : '#b91c1c',
+              }}>
+                {error}
               </div>
             )}
-          </div>
 
-          {/* Email Info */}
-          <div className={`mb-6 p-4 rounded-lg border ${
-            isDark 
-              ? 'bg-blue-500/20 border-blue-500/30' 
-              : 'bg-blue-50 border-blue-200'
-          }`}>
-            <div className="flex items-start">
-              <Mail className={`h-5 w-5 mr-2 mt-0.5 flex-shrink-0 ${
-                isDark ? 'text-blue-400' : 'text-blue-600'
-              }`} />
-              <div>
-                <div className={`text-sm font-medium mb-1 ${
-                  isDark ? 'text-blue-300' : 'text-blue-700'
-                }`}>
-                  Email Notification
-                </div>
-                <div className={`text-sm ${
-                  isDark ? 'text-blue-200' : 'text-blue-600'
-                }`}>
-                  The reminder will be sent to your registered email address. Make sure your email notifications are enabled in your profile settings.
-                </div>
-              </div>
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={onClose}
+                disabled={loading}
+                style={{
+                  flex: 1, padding: '11px',
+                  borderRadius: 10, border: `1.5px solid ${border}`,
+                  background: 'transparent', cursor: 'pointer',
+                  fontSize: 13.5, fontWeight: 600, color: textSec,
+                  fontFamily: 'inherit', transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = hoverBg}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                style={{
+                  flex: 2, padding: '11px',
+                  borderRadius: 10,
+                  border: 'none',
+                  background: isDark ? '#f0f0f0' : '#111111',
+                  color: isDark ? '#111' : '#fff',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  fontSize: 13.5, fontWeight: 700,
+                  fontFamily: 'inherit',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                  opacity: loading ? 0.6 : 1,
+                  transition: 'opacity 0.15s',
+                }}
+              >
+                {loading ? (
+                  <>
+                    <svg style={{ animation: 'spin 0.8s linear infinite' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                    </svg>
+                    Setting…
+                  </>
+                ) : (
+                  <>
+                    <BellIcon size={14} color="currentColor" />
+                    Set Reminder
+                  </>
+                )}
+              </button>
             </div>
-          </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className={`mb-4 p-3 rounded-lg border ${
-              isDark 
-                ? 'bg-red-500/20 border-red-500/30' 
-                : 'bg-red-50 border-red-200'
-            }`}>
-              <div className="flex items-start">
-                <AlertCircle className={`h-5 w-5 mr-2 mt-0.5 flex-shrink-0 ${
-                  isDark ? 'text-red-400' : 'text-red-600'
-                }`} />
-                <div className={`text-sm ${
-                  isDark ? 'text-red-300' : 'text-red-700'
-                }`}>{error}</div>
-              </div>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex items-center justify-end space-x-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                isDark 
-                  ? 'text-gray-300 bg-gray-800 hover:bg-gray-700 border border-gray-700' 
-                  : 'text-gray-700 bg-white hover:bg-gray-50 border border-gray-300'
-              }`}
-              disabled={loading}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={loading}
-              className="px-6 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-            >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Setting...
-                </>
-              ) : (
-                <>
-                  <Bell className="h-4 w-4 mr-2" />
-                  Set Reminder
-                </>
-              )}
-            </button>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Toast */}
+      {toast && <Toast message={toast} onDone={() => setToast(null)} />}
+
+      {/* Keyframes */}
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </>
   );
 };
 
