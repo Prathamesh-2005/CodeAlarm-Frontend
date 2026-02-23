@@ -45,19 +45,28 @@ const Confetti = ({ active }) => {
 const Toast = ({ message, emoji, visible }) => (
 	<div style={{
 		position: 'fixed', bottom: 28, left: '50%',
-		transform: `translateX(-50%) translateY(${visible ? 0 : 20}px)`,
+		transform: `translateX(-50%) translateY(${visible ? 0 : 24}px)`,
 		opacity: visible ? 1 : 0,
 		transition: 'all 0.35s cubic-bezier(.22,1,.36,1)',
 		zIndex: 9998, pointerEvents: 'none',
 		display: 'flex', alignItems: 'center', gap: 10,
-		background: '#0f0f0f',           /* ← was #111827, now matches Home */
-		border: '1px solid #2a2a2a',     /* ← was #374151 */
-		borderRadius: 14, padding: '12px 22px',
-		boxShadow: '0 8px 40px rgba(0,0,0,0.7)',
-		fontSize: 14, fontWeight: 600, color: '#f0f0f0', /* ← was #f9fafb */
+		background: '#0f0f0f',
+		border: '1px solid #2a2a2a',
+		borderRadius: 12, padding: '12px 20px',
+		boxShadow: '0 8px 40px rgba(0,0,0,0.45)',
+		fontFamily: '"DM Sans", sans-serif',
+		fontSize: 14, fontWeight: 600, color: '#e5e5e5',
 		whiteSpace: 'nowrap',
 	}}>
-		<span style={{ fontSize: 18 }}>{emoji}</span>
+		<span style={{
+			width: 20, height: 20, borderRadius: '50%',
+			background: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center',
+			flexShrink: 0,
+		}}>
+			<svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+				<path d="M2 5.5L4.5 8L9 3" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+			</svg>
+		</span>
 		{message}
 	</div>
 );
@@ -73,15 +82,15 @@ export const SystemDesign = () => {
 	const [completedChapters, setCompletedChapters] = useState([]);
 	const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
 	const [showConfetti, setShowConfetti] = useState(false);
-	const [toast, setToast] = useState({ visible: false, message: '', emoji: '🎉' });
+	const [toast, setToast] = useState({ visible: false, message: '' });
 
 	const containerRef = React.useRef(null);
 	const navigate = useNavigate();
 	const { slug } = useParams();
 
-	const triggerCelebration = (message, emoji = '🎉') => {
+	const triggerCelebration = (message) => {
 		setShowConfetti(true);
-		setToast({ visible: true, message, emoji });
+		setToast({ visible: true, message });
 		setTimeout(() => setShowConfetti(false), 5500);
 		setTimeout(() => setToast(t => ({ ...t, visible: false })), 3500);
 	};
@@ -117,7 +126,7 @@ export const SystemDesign = () => {
 			const isBottom = scrollTop + clientHeight >= scrollHeight - 50;
 			if (isBottom && activeChapter && !completedChapters.includes(activeChapter) && !hasScrolledToBottom) {
 				setHasScrolledToBottom(true);
-				triggerCelebration("You've reached the end!", '🎉');
+				triggerCelebration("You've reached the end!");
 			}
 			if (chapterContent && chapterContent.sections) {
 				const sections = chapterContent.sections;
@@ -158,7 +167,7 @@ export const SystemDesign = () => {
 			updated.push(chapterSlug);
 			setCompletedChapters(updated);
 			localStorage.setItem('completedChapters', JSON.stringify(updated));
-			triggerCelebration('Chapter completed!', '✅');
+			triggerCelebration('Chapter completed!');
 		}
 	};
 
@@ -169,7 +178,7 @@ export const SystemDesign = () => {
 			: [...completedChapters, chapterSlug];
 		setCompletedChapters(updated);
 		localStorage.setItem('completedChapters', JSON.stringify(updated));
-		if (!alreadyDone) triggerCelebration('Marked complete!', '🏆');
+		if (!alreadyDone) triggerCelebration('Marked complete!');
 	};
 
 	const getProgress = () => {
@@ -203,7 +212,7 @@ export const SystemDesign = () => {
 		<div className="system-design-container min-h-screen text-white" style={{ background: '#0a0a0a' }}>
 
 			<Confetti active={showConfetti} />
-			<Toast visible={toast.visible} message={toast.message} emoji={toast.emoji} />
+			<Toast visible={toast.visible} message={toast.message} />
 
 			<button
 				onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -225,25 +234,26 @@ export const SystemDesign = () => {
 						boxShadow: '4px 0 20px rgba(0,0,0,0.4)',
 					}}
 				>
-					<div className="p-4">
-						<div className="mb-4">
-							<h2 className="text-xl font-bold gradient-text">System Design</h2>
-							<div className="mt-3">
-								<div className="flex items-center justify-between text-xs mb-1">
-									<span style={{ color: '#666666' }}>Progress</span>
-									<span style={{ color: '#888888', fontWeight: 600 }}>{getProgress()}%</span>
+					<div className="p-4 pt-6">
+						<div className="mb-6">
+							<h2 className="text-2xl font-bold mb-1" style={{ color: '#ffffff' }}>System Design</h2>
+							<div className="mt-4">
+								<div className="flex items-center justify-between text-xs mb-2">
+									<span style={{ color: '#999999' }}>Progress</span>
+									<span style={{ color: '#ffffff', fontWeight: 700 }}>{getProgress()}%</span>
 								</div>
 								{/* Progress bar */}
-								<div style={{ background: '#1e1e1e', borderRadius: 9999, height: 8, overflow: 'hidden' }}>
+								<div style={{ background: '#1a1a1a', borderRadius: 9999, height: 6, overflow: 'hidden' }}>
 									<div
-										className="h-2 rounded-full transition-all duration-500"
+										className="rounded-full transition-all duration-500"
 										style={{
+											height: '100%',
 											width: `${getProgress()}%`,
-											background: 'linear-gradient(90deg, #06b6d4, #9333ea)',
+											background: '#444444',
 										}}
 									/>
 								</div>
-								<p className="text-xs mt-1" style={{ color: '#444444' }}>
+								<p className="text-xs mt-2" style={{ color: '#666666' }}>
 									{completedChapters.length} of {chapters.length} chapters completed
 								</p>
 							</div>
@@ -261,66 +271,72 @@ export const SystemDesign = () => {
 								<style>{`@keyframes sd-spin { to { transform: rotate(360deg); } }`}</style>
 							</div>
 						) : (
-							<nav className="space-y-2">
+							<nav className="space-y-1">
 								{chapters.map((chapter, idx) => {
 									const isCompleted = completedChapters.includes(chapter.slug);
 									const isActive = activeChapter === chapter.slug;
 									return (
-										<div key={chapter.slug} className="space-y-1">
-											<div className="flex items-center gap-1">
+										<div key={chapter.slug} className="space-y-0">
+											<div className="flex items-center gap-2">
 												<button
 													onClick={() => {
 														toggleChapter(chapter.slug);
 														navigate(`/system-design/${chapter.slug}`);
 													}}
-													className="flex-1 flex items-center justify-between gap-2 text-left px-4 py-3 rounded-lg transition-all"
+													className="flex-1 flex items-center justify-between gap-3 text-left px-3 py-3 rounded-lg transition-all"
 													style={{
-														background: isActive ? '#161616' : 'transparent',  /* was bg-gray-800 */
-														border: isActive ? '1px solid #222222' : '1px solid transparent',
-														color: isActive ? '#f0f0f0' : '#666666',
+														background: isActive ? '#1a1a1a' : 'transparent',
+														border: isActive ? '1px solid #2a2a2a' : '1px solid transparent',
+														color: isActive ? '#ffffff' : '#888888',
+														fontSize: '15px',
+														fontWeight: isActive ? 500 : 400,
 													}}
-													onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#111111'; }}
-													onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
+													onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = '#0f0f0f'; e.currentTarget.style.color = '#aaaaaa'; } }}
+													onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#888888'; } }}
 												>
-													<div className="flex gap-2 items-center">
-														<span style={{ fontWeight: 700, color: '#333333' }}>{idx + 1}.</span>
-														<span className="text-sm">{chapter.title}</span>
+													<div className="flex gap-3 items-center">
+														<span style={{ fontWeight: 700, color: isActive ? '#666666' : '#444444', fontSize: '14px' }}>{idx + 1}.</span>
+														<span>{chapter.title}</span>
 													</div>
 													{isActive
-														? <ChevronUp size={16} style={{ color: '#444444' }} />
-														: <ChevronDown size={16} style={{ color: '#333333' }} />
+														? <ChevronUp size={18} style={{ color: '#666666' }} />
+														: <ChevronDown size={18} style={{ color: '#444444' }} />
 													}
 												</button>
 
 												<button
 													onClick={() => toggleChapterComplete(chapter.slug)}
-													className="p-2 rounded-lg transition-all"
+													className="p-2 rounded-lg transition-all flex-shrink-0"
 													style={{
-														background: isCompleted ? 'rgba(74,222,128,0.1)' : '#111111',
-														color: isCompleted ? '#4ade80' : '#333333',
-														border: `1px solid ${isCompleted ? '#14532d' : '#1e1e1e'}`,
+														background: isCompleted ? 'rgba(74,222,128,0.15)' : '#0f0f0f',
+														color: isCompleted ? '#4ade80' : '#444444',
+														border: `1px solid ${isCompleted ? '#15803d' : '#1a1a1a'}`,
 													}}
 													title={isCompleted ? "Mark as incomplete" : "Mark as complete"}
+													onMouseEnter={e => { if (!isCompleted) { e.currentTarget.style.borderColor = '#2a2a2a'; e.currentTarget.style.color = '#666666'; } }}
+													onMouseLeave={e => { if (!isCompleted) { e.currentTarget.style.borderColor = '#1a1a1a'; e.currentTarget.style.color = '#444444'; } }}
 												>
 													<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
 													</svg>
 												</button>
 											</div>
 
 											{isActive && chapter.sections && (
-												<div className="ml-6 pl-3 space-y-1" style={{ borderLeft: '1px solid #1e1e1e' }}>
+												<div className="ml-8 pl-4 mt-1 mb-2 space-y-0.5" style={{ borderLeft: '2px solid #1a1a1a' }}>
 													{chapter.sections.map((section) => (
 														<button
 															key={section.slug}
 															onClick={() => scrollToSection(section.slug)}
-															className="w-full text-left block rounded-lg px-4 py-2 text-sm transition-all"
+															className="w-full text-left block rounded-md px-3 py-2.5 transition-all"
 															style={{
-																background: activeSubSection === section.slug ? '#161616' : 'transparent',
-																color: activeSubSection === section.slug ? '#e0e0e0' : '#444444',
+																background: activeSubSection === section.slug ? '#1a1a1a' : 'transparent',
+																color: activeSubSection === section.slug ? '#ffffff' : '#666666',
+																fontSize: '14px',
+																fontWeight: activeSubSection === section.slug ? 500 : 400,
 															}}
-															onMouseEnter={e => { if (activeSubSection !== section.slug) e.currentTarget.style.background = '#111111'; }}
-															onMouseLeave={e => { if (activeSubSection !== section.slug) e.currentTarget.style.background = 'transparent'; }}
+															onMouseEnter={e => { if (activeSubSection !== section.slug) { e.currentTarget.style.background = '#0f0f0f'; e.currentTarget.style.color = '#aaaaaa'; } }}
+															onMouseLeave={e => { if (activeSubSection !== section.slug) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#666666'; } }}
 														>
 															{section.heading}
 														</button>

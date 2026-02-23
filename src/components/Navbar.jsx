@@ -67,13 +67,13 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   // ── Tokens ───────────────────────────────────────────────────────
-  const surface   = isDark ? '#111111' : '#ffffff';
-  const border    = isDark ? '#1e1e1e' : '#e5e7eb';
-  const textPri   = isDark ? '#f0f0f0' : '#111111';
-  const textSec   = isDark ? '#666666' : '#9ca3af';
-  const hoverBg   = isDark ? '#1a1a1a' : '#f3f4f6';
-  const activeBg  = isDark ? '#1e1e1e' : '#f0f0f0';
-  const inputBg   = isDark ? '#161616' : '#f9fafb';
+  const surface   = isDark ? '#1a1a1a' : '#ffffff';
+  const border    = isDark ? '#2a2a2a' : '#e5e7eb';
+  const textPri   = isDark ? '#ffffff' : '#111111';
+  const textSec   = isDark ? '#888888' : '#9ca3af';
+  const hoverBg   = isDark ? '#242424' : '#f3f4f6';
+  const activeBg  = isDark ? '#2a2a2a' : '#f0f0f0';
+  const inputBg   = isDark ? '#202020' : '#f9fafb';
 
   const navLinkBase = {
     display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -97,6 +97,7 @@ const Navbar = () => {
         position: 'sticky', top: 0, zIndex: 50,
         background: surface,
         borderBottom: `1.5px solid ${border}`,
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
         fontFamily: '"DM Sans", sans-serif',
       }}>
         <div style={{ maxWidth: 1160, margin: '0 auto', padding: '0 24px' }}>
