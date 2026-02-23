@@ -362,7 +362,9 @@ export const SystemDesign = () => {
 							{chapterContent.sections?.map((section) => {
 								const fixedContent = section.content
 									.replace(/src="images\//g, `src="${IMAGES_BASE_URL}`)
-									.replace(/src='images\//g, `src='${IMAGES_BASE_URL}`);
+									.replace(/src='images\//g, `src='${IMAGES_BASE_URL}`)
+									.replace(/src="\.\/images\//g, `src="${IMAGES_BASE_URL}`)
+									.replace(/src='\.\/images\//g, `src='${IMAGES_BASE_URL}`);
 								return (
 									<div key={section.slug} className="w-full mb-4 relative">
 										<div id={section.slug} className="chapter" dangerouslySetInnerHTML={{ __html: fixedContent }} />
