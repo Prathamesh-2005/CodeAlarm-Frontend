@@ -605,7 +605,7 @@ const Register = () => {
             </div>
             <div style={{ fontSize: 12, color: textSec }}>
               Made with <Heart style={{ display: 'inline', width: 12, height: 12, color: '#ef4444' }} /> by{' '}
-              <a href="https://github.com/prathamesh177" target="_blank" rel="noopener noreferrer"
+              <a href="https://github.com/Prathamesh-2005" target="_blank" rel="noopener noreferrer"
                 style={{ fontWeight: 600, color: '#7c3aed', textDecoration: 'none', transition: 'color 0.15s' }}
                 onMouseEnter={e => e.currentTarget.style.color = '#a78bfa'}
                 onMouseLeave={e => e.currentTarget.style.color = '#7c3aed'}>
